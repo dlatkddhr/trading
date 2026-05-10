@@ -25,7 +25,7 @@ setInterval(() => {
 
     io.emit("updateStocks", stockData);
 
-}, 6000);
+}, 60000);
 
 io.on("connection", (socket) => {
 
