@@ -781,42 +781,6 @@
             requestAnimationFrame(pepemove);
         }
         pepemove();
-
-        let timer;
-        socket.on("updateStocks", (data) => {
-
-            S = data.S;
-            A = data.A;
-            J = data.J;
-            G = data.G;
-
-            SH = data.SH;
-            AH = data.AH;
-            JH = data.JH;
-            GH = data.GH;
-
-            stocks.S.price = S.가격;
-            stocks.A.price = A.가격;
-            stocks.J.price = J.가격;
-            stocks.G.price = G.가격;
-
-            document.getElementById("S").textContent =
-                "상록전자 (" + S.가격 + ")";
-
-            document.getElementById("A").textContent =
-                "안산제약 (" + A.가격 + ")";
-
-            document.getElementById("J").textContent =
-                "주원금융 (" + J.가격 + ")";
-
-            document.getElementById("G").textContent =
-                "gta게임즈 (" + G.가격 + ")";
-
-            if (U == 1) {
-                draw();
-            }
-        });
-
         updateUI();
     </script>
 </body>
