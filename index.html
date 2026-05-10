@@ -516,58 +516,50 @@
         const Gctx = Gcanvas.getContext("2d");
 
         function drawChart(ctx, canvas, history) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (!history || history.length < 2) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            let min = Math.min(...history);
-            let max = Math.max(...history);
+    if (!history || history.length < 2) return;
 
-            if (min === max) {
-                min -= 1;
-                max += 1;
-            }
+    let min = Math.min(...history);
+    let max = Math.max(...history);
 
-            const pad = Math.max(10, (max - min) * 0.15);
-            const low = min - pad;
-            const high = max + pad;
-            const range = high - low;
+    if (min === max) {
+        min -= 1;
+        max += 1;
+    }
 
-            const stepX = canvas.width / (history.length - 1);
+    const padding = 20;
 
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height - ((history[0] - low) / range) * canvas.height);
+    const graphWidth = canvas.width - padding * 2;
+    const graphHeight = canvas.height - padding * 2;
 
-            for (let idx = 1; idx < history.length; idx++) {
-                const x = stepX * idx;
-                const y = canvas.height - ((history[idx] - low) / range) * canvas.height;
-                ctx.lineTo(x, y);
-            }
+    ctx.beginPath();
 
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.lineTo(0, canvas.height);
-            ctx.closePath();
+    for (let i = 0; i < history.length; i++) {
 
-            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grad.addColorStop(0, "rgba(255,0,0,0.35)");
-            grad.addColorStop(1, "rgba(255,0,0,0)");
+        const x =
+            padding +
+            (i / (history.length - 1)) * graphWidth;
 
-            ctx.fillStyle = grad;
-            ctx.fill();
+        const y =
+            padding +
+            graphHeight -
+            ((history[i] - min) / (max - min)) * graphHeight;
 
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height - ((history[0] - low) / range) * canvas.height);
-
-            for (let idx = 1; idx < history.length; idx++) {
-                const x = stepX * idx;
-                const y = canvas.height - ((history[idx] - low) / range) * canvas.height;
-                ctx.lineTo(x, y);
-            }
-
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 3;
-            ctx.stroke();
+        if (i === 0) {
+            ctx.moveTo(x, y);
         }
+
+        else {
+            ctx.lineTo(x, y);
+        }
+    }
+
+    ctx.strokeStyle = "#ff4444";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
 
         function drawAll() {
             drawChart(Sctx, Scanvas, stocks.S.history);
