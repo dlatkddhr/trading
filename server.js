@@ -69,7 +69,7 @@ setInterval(() => {
     if (stockData.G.history.length > 30)
         stockData.G.history.shift();
 
-    io.emit("updateStocks", stockData);
+    io.emit("stockUpdate", stockData);
 
 }, 60000);
 
