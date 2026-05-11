@@ -401,7 +401,7 @@
             const high  = max + pad;
             const range = high - low;
             // stepX는 전체 길이 기준 → 점이 늘어날수록 오른쪽으로 이동
-            const stepX = canvas.width / (history.length - 1);
+            const stepX = canvas.width / 14; // 항상 15칸 기준으로 고정
 
             const toY = v => canvas.height - ((v - low) / range) * canvas.height;
 
