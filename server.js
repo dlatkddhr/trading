@@ -10,22 +10,54 @@ const io = new Server(server);
 app.use(express.static("public"));
 
 let stockData = {
-    S: 1500,
-    A: 1000,
-    J: 100,
-    G: 500
+    S: {
+        price: 1500,
+        history: [1500]
+    },
+
+    A: {
+        price: 1000,
+        history: [1000]
+    },
+
+    J: {
+        price: 100,
+        history: [100]
+    },
+
+    G: {
+        price: 500,
+        history: [500]
+    }
 };
+
+function updateStock(stock, change, minPrice) {
+
+    stock.price += Math.random() > 0.5 ? change : -change;
+
+    if (stock.price < minPrice) {
+        stock.price = minPrice;
+    }
+
+    stock.history.push(stock.price);
+
+    if (stock.history.length > 30) {
+        stock.history.shift();
+    }
+}
 
 setInterval(() => {
 
-    stockData.S += Math.random() > 0.5 ? 50 : -50;
-    stockData.A += Math.random() > 0.5 ? 50 : -50;
-    stockData.J += Math.random() > 0.5 ? 25 : -25;
-    stockData.G += Math.random() > 0.5 ? 75 : -75;
+    updateStock(stockData.S, 50, 100);
+    updateStock(stockData.A, 50, 100);
+    updateStock(stockData.J, 25, 10);
+    updateStock(stockData.G, 75, 50);
+
+    console.log("주가 변동");
 
     io.emit("updateStocks", stockData);
 
-}, 6000);
+}, 3000); // 테스트용 3초
 
 io.on("connection", (socket) => {
 
@@ -38,5 +70,6 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
+
     console.log("서버 실행중");
 });
