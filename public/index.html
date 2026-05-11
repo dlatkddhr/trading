@@ -631,17 +631,23 @@
         let x = 0, y = 0, mx = 1, my = 1;
 
         function spawnPepe() {
+            if (pepeclick) return;
+        
+            pepe.src = ""; // 초기화
+            pepe.src = "pepe.gif"; // 다시 로드
+
             const w = window.innerWidth;
             const h = window.innerHeight;
             const pw = pepe.offsetWidth || 100;
             const ph = pepe.offsetHeight || 100;
 
-            x = Math.random() * Math.max(0, w - pw);
-            y = Math.random() * Math.max(0, h - ph);
+            x = Math.random() * (w - pw);
+            y = Math.random() * (h - ph);
 
             pepe.style.left = x + "px";
             pepe.style.top = y + "px";
             pepe.style.opacity = 1;
+        
             pepeclick = true;
 
             setTimeout(() => {
@@ -650,13 +656,7 @@
             }, 12500);
         }
 
-        pepe.addEventListener("click", function () {
-            if (pepeclick) {
-                socket.emit("pepeReward");
-                pepeclick = false;
-                pepe.style.opacity = 0;
-            }
-        });
+        setInterval(spawnPepe, 12500);
 
         function pepemove() {
             x += mx; y += my;
@@ -674,8 +674,7 @@
             requestAnimationFrame(pepemove);
         }
 
-        pepemove();
-        setInterval(spawnPepe, 12500);
+        pepemove()
         spawnPepe();
     </script>
 </body>
