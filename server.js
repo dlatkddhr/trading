@@ -33,51 +33,47 @@ let stockData = {
 
 let users = {};
 
+function updateStock(type, change, minPrice) {
+
+    stockData[type].price += Math.random() > 0.5
+        ? change
+        : -change;
+
+    if (stockData[type].price < minPrice) {
+        stockData[type].price = minPrice;
+    }
+
+    stockData[type].history.push(
+        stockData[type].price
+    );
+
+    if (stockData[type].history.length > 30) {
+        stockData[type].history.shift();
+    }
+}
+
 setInterval(() => {
 
-    stockData.S.price += Math.random() > 0.5 ? 50 : -50;
-    stockData.A.price += Math.random() > 0.5 ? 50 : -50;
-    stockData.J.price += Math.random() > 0.5 ? 25 : -25;
-    stockData.G.price += Math.random() > 0.5 ? 75 : -75;
-
-    if (stockData.S.price < 100)
-        stockData.S.price = 100;
-
-    if (stockData.A.price < 100)
-        stockData.A.price = 100;
-
-    if (stockData.J.price < 10)
-        stockData.J.price = 10;
-
-    if (stockData.G.price < 50)
-        stockData.G.price = 50;
-
-    stockData.S.history.push(stockData.S.price);
-    stockData.A.history.push(stockData.A.price);
-    stockData.J.history.push(stockData.J.price);
-    stockData.G.history.push(stockData.G.price);
-
-    if (stockData.S.history.length > 30)
-        stockData.S.history.shift();
-
-    if (stockData.A.history.length > 30)
-        stockData.A.history.shift();
-
-    if (stockData.J.history.length > 30)
-        stockData.J.history.shift();
-
-    if (stockData.G.history.length > 30)
-        stockData.G.history.shift();
+    updateStock("S", 50, 100);
+    updateStock("A", 50, 100);
+    updateStock("J", 25, 10);
+    updateStock("G", 75, 50);
 
     io.emit("stockUpdate", stockData);
 
+    console.log("주식 변동");
+
 }, 60000);
+
+// 테스트용
+// }, 5000);
 
 io.on("connection", (socket) => {
 
     console.log("유저 접속");
 
     users[socket.id] = {
+
         balance: 2500,
 
         holdings: {
@@ -95,17 +91,26 @@ io.on("connection", (socket) => {
 
     socket.on("buy", ({ type, amount }) => {
 
-        let user = users[socket.id];
+        const user = users[socket.id];
 
-        let cost = stockData[type].price * amount;
+        if (!user) return;
 
-        if (user.balance >= cost) {
+        const price =
+            stockData[type].price * amount;
 
-            user.balance -= cost;
+        if (
+            amount > 0 &&
+            user.balance >= price
+        ) {
+
+            user.balance -= price;
 
             user.holdings[type] += amount;
 
-            socket.emit("userUpdate", user);
+            socket.emit(
+                "userUpdate",
+                user
+            );
 
             socket.emit("tradeResult", {
                 ok: true,
@@ -113,6 +118,10 @@ io.on("connection", (socket) => {
                 type,
                 amount
             });
+
+            console.log(
+                `${type} ${amount}개 매수`
+            );
         }
 
         else {
@@ -125,17 +134,26 @@ io.on("connection", (socket) => {
 
     socket.on("sell", ({ type, amount }) => {
 
-        let user = users[socket.id];
+        const user = users[socket.id];
 
-        if (user.holdings[type] >= amount) {
+        if (!user) return;
 
-            let gain = stockData[type].price * amount;
+        if (
+            amount > 0 &&
+            user.holdings[type] >= amount
+        ) {
+
+            const gain =
+                stockData[type].price * amount;
 
             user.balance += gain;
 
             user.holdings[type] -= amount;
 
-            socket.emit("userUpdate", user);
+            socket.emit(
+                "userUpdate",
+                user
+            );
 
             socket.emit("tradeResult", {
                 ok: true,
@@ -143,6 +161,10 @@ io.on("connection", (socket) => {
                 type,
                 amount
             });
+
+            console.log(
+                `${type} ${amount}개 매도`
+            );
         }
 
         else {
@@ -159,7 +181,6 @@ io.on("connection", (socket) => {
 
         delete users[socket.id];
     });
-
 });
 
 const PORT = process.env.PORT || 3000;
