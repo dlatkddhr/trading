@@ -24,10 +24,10 @@ function updateStock(stock, change, minPrice) {
 }
 
 setInterval(() => {
-    updateStock(stockData.S, 50,  100);
-    updateStock(stockData.A, 50,  100);
+    updateStock(stockData.S, 100, 100);
+    updateStock(stockData.A, 75,  100);
     updateStock(stockData.J, 25,  10);
-    updateStock(stockData.G, 75,  50);
+    updateStock(stockData.G, 50,  50);
     io.emit("stockUpdate", stockData);
 }, 60000); // 1분
 
