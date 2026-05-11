@@ -741,6 +741,48 @@
                 touch.remove();
             }, 500);
         });
+        socket.on("buy", ({ type, amount }) => {
+
+            let user = users[socket.id];
+
+            let cost = stockData[type].price * amount;
+
+            if (user.balance >= cost) {
+
+                user.balance -= cost;
+                user.holdings[type] += amount;
+
+                socket.emit("userUpdate", user);
+
+                socket.emit("tradeResult", {
+                    ok: true,
+                    side: "buy",
+                    type,
+                    amount
+                });
+            }
+        });
+        socket.on("sell", ({ type, amount }) => {
+
+            let user = users[socket.id];
+
+            if (user.holdings[type] >= amount) {
+
+                let gain = stockData[type].price * amount;
+
+                user.balance += gain;
+                user.holdings[type] -= amount;
+
+                socket.emit("userUpdate", user);
+        
+                socket.emit("tradeResult", {
+                    ok: true,
+                    side: "sell",
+                    type,
+                    amount
+                });
+            }
+        });
 
         let x = 0;
         let y = 0;
