@@ -45,7 +45,27 @@ function updateStock(stock, change, minPrice) {
         stock.history.shift();
     }
 }
+function buyStock(type) {
+    let amount = select[type];
 
+    if (amount > 0) {
+        socket.emit("buy", {
+            type,
+            amount
+        });
+    }
+}
+
+function sellStock(type) {
+    let amount = Math.min(select[type], holdings[type]);
+
+    if (amount > 0) {
+        socket.emit("sell", {
+            type,
+            amount
+        });
+    }
+}
 setInterval(() => {
 
     updateStock(stockData.S, 50, 100);
