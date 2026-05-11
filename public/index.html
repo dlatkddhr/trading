@@ -628,53 +628,85 @@
         });
 
         const pepe = document.getElementById("pepe");
+
         let x = 0, y = 0, mx = 1, my = 1;
 
         function spawnPepe() {
+        
             if (pepeclick) return;
         
-            pepe.src = ""; // 초기화
-            pepe.src = "pepe.gif"; // 다시 로드
-
+            // GIF 처음부터 재생
+            pepe.src = "";
+            pepe.src = "pepe.gif";
+        
             const w = window.innerWidth;
             const h = window.innerHeight;
             const pw = pepe.offsetWidth || 100;
             const ph = pepe.offsetHeight || 100;
-
-            x = Math.random() * (w - pw);
-            y = Math.random() * (h - ph);
-
+        
+            x = Math.random() * Math.max(0, w - pw);
+            y = Math.random() * Math.max(0, h - ph);
+        
             pepe.style.left = x + "px";
             pepe.style.top = y + "px";
+        
             pepe.style.opacity = 1;
+            pepe.style.pointerEvents = "auto";
         
             pepeclick = true;
-
+        
             setTimeout(() => {
                 pepeclick = false;
+
                 pepe.style.opacity = 0;
+                pepe.style.pointerEvents = "none";
             }, 12500);
         }
 
         setInterval(spawnPepe, 12500);
 
         function pepemove() {
-            x += mx; y += my;
 
-            const w = window.innerWidth, h = window.innerHeight;
-            const pw = pepe.offsetWidth || 100, ph = pepe.offsetHeight || 100;
+            // 보일 때만 이동
+            if (pepeclick) {
 
-            if (x <= 0)        { x = 0;      mx *= -1; }
-            if (x + pw >= w)   { x = w - pw; mx *= -1; }
-            if (y <= 0)        { y = 0;      my *= -1; }
-            if (y + ph >= h)   { y = h - ph; my *= -1; }
+                x += mx;
+                y += my;
 
-            pepe.style.left = x + "px";
-            pepe.style.top  = y + "px";
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                const pw = pepe.offsetWidth || 100;
+                const ph = pepe.offsetHeight || 100;
+        
+                if (x <= 0) {
+                    x = 0;
+                    mx *= -1;
+                }
+
+                if (x + pw >= w) {
+                    x = w - pw;
+                    mx *= -1;
+                }
+
+                if (y <= 0) {
+                    y = 0;
+                    my *= -1;
+                }
+
+                if (y + ph >= h) {
+                    y = h - ph;
+                    my *= -1;
+                }
+
+                pepe.style.left = x + "px";
+                pepe.style.top = y + "px";
+            }
+
             requestAnimationFrame(pepemove);
         }
 
-        pepemove()
+        pepemove();
         spawnPepe();
     </script>
 </body>
