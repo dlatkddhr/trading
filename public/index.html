@@ -4,6 +4,12 @@
 - 채팅창(명령어)
 - 매수,매도 할때 돈 추가되는거 보이게
 -->
+<!--
+    다음에 할것
+- 그래프 안정화
+- 채팅창(명령어)
+- 매수,매도 할때 돈 추가되는거 보이게
+-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -385,11 +391,13 @@
         const Jctx = Jcanvas.getContext("2d");
         const Gctx = Gcanvas.getContext("2d");
 
-        // ── 차트 그리기 ──────────────────────────────────────
-        function drawChart(ctx, canvas, history) {
+        // ── 차트 그리기 (즉시 / 포인트 수 지정) ──────────────
+        function drawChart(ctx, canvas, history, visibleCount) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (!history || history.length < 2) return;
+            const shown = history.slice(0, visibleCount ?? history.length);
+            if (!shown || shown.length < 2) return;
 
+            // min/max는 전체 히스토리 기준으로 고정 (스케일 안 튀게)
             let min = Math.min(...history);
             let max = Math.max(...history);
             if (min === max) { min -= 1; max += 1; }
@@ -398,14 +406,15 @@
             const low   = min - pad;
             const high  = max + pad;
             const range = high - low;
+            // stepX는 전체 길이 기준 → 점이 늘어날수록 오른쪽으로 이동
             const stepX = canvas.width / (history.length - 1);
 
             const toY = v => canvas.height - ((v - low) / range) * canvas.height;
 
             ctx.beginPath();
-            ctx.moveTo(0, toY(history[0]));
-            for (let i = 1; i < history.length; i++) ctx.lineTo(stepX * i, toY(history[i]));
-            ctx.lineTo(canvas.width, canvas.height);
+            ctx.moveTo(0, toY(shown[0]));
+            for (let i = 1; i < shown.length; i++) ctx.lineTo(stepX * i, toY(shown[i]));
+            ctx.lineTo(stepX * (shown.length - 1), canvas.height);
             ctx.lineTo(0, canvas.height);
             ctx.closePath();
 
@@ -416,18 +425,57 @@
             ctx.fill();
 
             ctx.beginPath();
-            ctx.moveTo(0, toY(history[0]));
-            for (let i = 1; i < history.length; i++) ctx.lineTo(stepX * i, toY(history[i]));
+            ctx.moveTo(0, toY(shown[0]));
+            for (let i = 1; i < shown.length; i++) ctx.lineTo(stepX * i, toY(shown[i]));
             ctx.strokeStyle = "red";
             ctx.lineWidth = 3;
             ctx.stroke();
         }
 
+        // 애니메이션 상태 (종목별 현재 몇 번째 포인트까지 그렸는지)
+        const animState = { S: 1, A: 1, J: 1, G: 1 };
+        const animRAF   = { S: null, A: null, J: null, G: null };
+
+        function animateChart(type) {
+            const map = { S: [Sctx, Scanvas], A: [Actx, Acanvas], J: [Jctx, Jcanvas], G: [Gctx, Gcanvas] };
+            const [ctx, canvas] = map[type];
+            const history = stocks[type].history;
+
+            // 이미 다 그린 상태면 그냥 그리고 종료
+            if (animState[type] >= history.length) {
+                drawChart(ctx, canvas, history);
+                return;
+            }
+
+            cancelAnimationFrame(animRAF[type]);
+
+            function step() {
+                drawChart(ctx, canvas, history, animState[type]);
+                if (animState[type] < history.length) {
+                    animState[type]++;
+                    // 포인트 하나당 50ms (총 30포인트 × 50ms = 1.5초)
+                    animRAF[type] = setTimeout(() => requestAnimationFrame(step), 50);
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
         function drawAll() {
-            drawChart(Sctx, Scanvas, stocks.S.history);
-            drawChart(Actx, Acanvas, stocks.A.history);
-            drawChart(Jctx, Jcanvas, stocks.J.history);
-            drawChart(Gctx, Gcanvas, stocks.G.history);
+            // 새 데이터가 들어올 때: 마지막 포인트 하나만 추가 애니메이션
+            ["S", "A", "J", "G"].forEach(type => {
+                const map = { S: [Sctx, Scanvas], A: [Actx, Acanvas], J: [Jctx, Jcanvas], G: [Gctx, Gcanvas] };
+                const [ctx, canvas] = map[type];
+                animState[type] = stocks[type].history.length;
+                drawChart(ctx, canvas, stocks[type].history);
+            });
+        }
+
+        function drawAllAnimated() {
+            // 그래프 탭 처음 열 때: 처음부터 애니메이션
+            ["S", "A", "J", "G"].forEach(type => {
+                animState[type] = 1;
+                animateChart(type);
+            });
         }
 
         // ── UI 업데이트 ────────────────────────────────────────
@@ -543,7 +591,7 @@
             document.getElementById("infoText").style.color = "#000";
             document.querySelectorAll(".i").forEach(el => el.style.opacity = "0");
             document.querySelectorAll(".t").forEach(el => el.style.opacity = "0");
-            drawAll();
+            drawAllAnimated();
         });
 
         document.getElementById("infoBtn").addEventListener("click", function () {
