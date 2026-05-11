@@ -2,9 +2,7 @@
     다음에 할것
 - 그래프 안정화
 - 채팅창(명령어)
-- 그래프 옆에 단위                  굳이..
 - 매수,매도 할때 돈 추가되는거 보이게
-- 올라갈때 빨간색, 내려갈때 파란색    굳이..
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>코딩부 주식게임</title>
 </head>
 
 <style>
@@ -28,64 +26,44 @@
         position: absolute;
         top: 200px;
         left: 1050px;
-
         height: 250px;
         width: 700px;
-
         background: #1a1a1a;
-
         border-radius: 20px;
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
     }
 
     .jw {
         position: absolute;
         top: 600px;
         left: 150px;
-
         height: 250px;
         width: 700px;
-
         background: #1A1A1A;
-
         border-radius: 20px;
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
     }
 
     .gta {
         position: absolute;
         top: 600px;
         left: 1050px;
-
         height: 250px;
         width: 700px;
-
         background: #1A1A1A;
-
         border-radius: 20px;
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
     }
 
     .sangrok {
         position: absolute;
         top: 200px;
         left: 150px;
-
         height: 250px;
         width: 700px;
-
         background: #1A1A1A;
-
         border-radius: 20px;
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
     }
 
     .btn {
@@ -114,16 +92,12 @@
         position: fixed;
         top: 0;
         left: 0;
-
         background-color: #1A1A1A;
         color: white;
-
         height: 60px;
         width: 100%;
-
         display: flex;
         align-items: center;
-
         font-size: 20px;
         font-weight: bold;
         z-index: 20;
@@ -134,21 +108,13 @@
         right: 20px;
         bottom: -35px;
         position: absolute;
-
         width: 163px;
         height: 50px;
-
         border-radius: 20px;
-
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
     }
 
-    .Squantity,
-    .Aquantity,
-    .Jquantity,
-    .Gquantity {
+    .Squantity, .Aquantity, .Jquantity, .Gquantity {
         display: flex;
         justify-content: center;
         text-shadow: 0 0 2px #fff, 0 0 5px #fff;
@@ -156,24 +122,15 @@
         position: absolute;
         width: 60px;
         height: 40px;
-
         left: 50%;
         top: 50%;
         transform: translate(-50%, -55%);
-
         font-family: 'Quicksand', sans-serif;
         font-size: 1.8rem;
         line-height: 40px;
     }
 
-    .Splus,
-    .Sminus,
-    .Aplus,
-    .Aminus,
-    .Jplus,
-    .Jminus,
-    .Gplus,
-    .Gminus {
+    .Splus, .Sminus, .Aplus, .Aminus, .Jplus, .Jminus, .Gplus, .Gminus {
         text-shadow: 0 0 2px #fff, 0 0 5px #fff;
         color: #fff;
         display: flex;
@@ -190,9 +147,7 @@
         top: 116px;
         left: 145px;
         color: #FF4D4D;
-        box-shadow:
-            0 0 10px rgba(255, 255, 255, 0.1),
-            0 0 20px rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 10px rgba(255,255,255,0.1), 0 0 20px rgba(255,255,255,0.25);
         z-index: 5;
     }
 
@@ -217,19 +172,33 @@
     }
 
     @keyframes touchFade {
-        0% {
-            opacity: 0.9;
-            transform: translate(-50%, -50%) scale(0.5);
-        }
-
-        100% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(2.5);
-        }
+        0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.5); }
+        100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.5); }
     }
 
-    canvas {
+    canvas { pointer-events: none; }
+
+    /* 거래 알림 팝업 */
+    #tradeNotice {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 10px 22px;
+        font-size: 15px;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 0 12px rgba(0,0,0,0.5);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        opacity: 0;
+        z-index: 9999;
         pointer-events: none;
+    }
+    #tradeNotice.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
     }
 </style>
 
@@ -238,312 +207,204 @@
         <div style="margin-left: 20px;">코딩부와 함께하는 주식으로 나락가기</div>
     </div>
 
-    <div
-        style="border-radius: 20px; position: relative; left: 870px; top: 105px; background-color: #0d0d0d; height: 35px; width: 156px;">
-        <div id="graphBtn" class="btn"
-            style="position:absolute; background:#fff; top: 4px; right: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
-            <div id="graphText" style="font-size: 18px; font-weight: bold; margin-left: 7px; color: #000;">
-                그래프
-            </div>
+    <div style="border-radius: 20px; position: relative; left: 870px; top: 105px; background-color: #0d0d0d; height: 35px; width: 156px;">
+        <div id="graphBtn" class="btn" style="position:absolute; background:#fff; top: 4px; right: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
+            <div id="graphText" style="font-size: 18px; font-weight: bold; margin-left: 7px; color: #000;">그래프</div>
         </div>
-
-        <div id="infoBtn" class="btn"
-            style="position:absolute; background:transparent; top: 4px; left: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
-            <div id="infoText" style="font-size: 20px; font-weight: bold; margin-left:12.5px; color: #fff;">
-                정보
-            </div>
+        <div id="infoBtn" class="btn" style="position:absolute; background:transparent; top: 4px; left: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
+            <div id="infoText" style="font-size: 20px; font-weight: bold; margin-left:12.5px; color: #fff;">정보</div>
         </div>
     </div>
 
+    <!-- 상록전자 -->
     <div class="sangrok">
         <img src="상록전자.png" class="i" style="top: 10px; left: 10px;">
-
-        <div id="S" class="t" style="left: 98px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">상록전자 (1500)
-        </div>
-
+        <div id="S" class="t" style="left: 98px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">상록전자 (1500)</div>
         <div class="t" style="left: 98px; top: -75px; font-size: 16px; text-shadow:0 0 5px #fff">
             소개: 상록전자는 한국의 자산 1위 기업이며 반도체, 전자제품, 가전제품, 휴대폰 및<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전 세계적으로 많은 전자제품사업을 하고있습니다.
         </div>
-
         <div class="t" style="left: 13px; top: -69px; text-shadow:0 0 5px #fff">소식: </div>
-        <canvas id="Schart" width="700" height="250"
-            style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
-
+        <canvas id="Schart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
         <div class="bar">
-            <div id="Ssell" class="btn"
-                style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+            <div id="Ssell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
             </div>
-
-            <div id="Sbuy" class="btn"
-                style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+            <div id="Sbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
             </div>
         </div>
-
-        <div class="bar"
-            style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Sminus" data-value="100">-100</div>
             <div class="Sminus" data-value="10">-10</div>
             <div class="Sminus" data-value="1">-1</div>
         </div>
-
-        <div class="bar" style="width: 130px; left: 140px;">
-            <div class="Squantity">0</div>
-        </div>
-
-        <div class="bar"
-            style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Squantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Splus" data-value="1">+1</div>
             <div class="Splus" data-value="10">+10</div>
             <div class="Splus" data-value="100">+100</div>
         </div>
-
-        <div class="holdings">
-            <div id="SHT" class="SHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div>
-        </div>
+        <div class="holdings"><div id="SHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
     </div>
 
+    <!-- 안산제약 -->
     <div class="ansan">
         <img src="안산제약.png" class="i" style="left: 10px; top: 10px; height: 85px; width: 85px;">
-
-        <div id="A" class="t" style="left: 103px; top: -85px; text-shadow: 0 0 2px #fff,0 0 5px #fff">안산제약 (1000)
-        </div>
-
+        <div id="A" class="t" style="left: 103px; top: -85px; text-shadow: 0 0 2px #fff,0 0 5px #fff">안산제약 (1000)</div>
         <div class="t" style="left: 103px; top: -80px; font-size: 16px; text-shadow:0 0 5px #fff">
             소개: 안산제약은 한국에서 판매율 1위를 유지하고 있으며 진통제, 해열제, 연고 등
             <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일상에서 자주 사용되는 약품을 만들고있습니다
         </div>
-
         <div class="t" style="left: 13px; top: -69px; text-shadow:0 0 5px #fff">소식: </div>
-        <canvas id="Achart" width="700" height="250"
-            style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
-
+        <canvas id="Achart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
         <div class="bar">
-            <div id="Asell" class="btn"
-                style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+            <div id="Asell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
             </div>
-
-            <div id="Abuy" class="btn"
-                style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+            <div id="Abuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
             </div>
         </div>
-
-        <div class="bar"
-            style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Aminus" data-value="100">-100</div>
             <div class="Aminus" data-value="10">-10</div>
             <div class="Aminus" data-value="1">-1</div>
         </div>
-
-        <div class="bar" style="width: 130px; left: 140px;">
-            <div class="Aquantity">0</div>
-        </div>
-
-        <div class="bar"
-            style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Aquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Aplus" data-value="1">+1</div>
             <div class="Aplus" data-value="10">+10</div>
             <div class="Aplus" data-value="100">+100</div>
         </div>
-
-        <div class="holdings">
-            <div id="AHT" class="AHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div>
-        </div>
+        <div class="holdings"><div id="AHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
     </div>
 
+    <!-- 주원금융 -->
     <div class="jw">
-        <img src="주원금융.png" class="i" style=" left: 10px; top: 10px;">
-
-        <div class="t" id="J" style="left: 95px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">주원금융 (100)
-        </div>
-
+        <img src="주원금융.png" class="i" style="left: 10px; top: 10px;">
+        <div class="t" id="J" style="left: 95px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">주원금융 (100)</div>
         <div class="t" style="left: 95px; top: -75px; font-size: 16px; text-shadow:0 0 5px #fff">
             소개: 주원금융은 대표적인 한국의 금융회사이며 이곳에선 주로 고객의
             <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자산운용을 도와주며 보험 또한 운영하고있습니다
         </div>
-
         <div class="t" style="left: 10px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
-        <canvas id="Jchart" width="700" height="250"
-            style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
-
+        <canvas id="Jchart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
         <div class="bar">
-            <div id="Jsell" class="btn"
-                style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+            <div id="Jsell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
             </div>
-
-            <div id="Jbuy" class="btn"
-                style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+            <div id="Jbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
             </div>
         </div>
-
-        <div class="bar"
-            style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Jminus" data-value="100">-100</div>
             <div class="Jminus" data-value="10">-10</div>
             <div class="Jminus" data-value="1">-1</div>
         </div>
-
-        <div class="bar" style="width: 130px; left: 140px;">
-            <div class="Jquantity">0</div>
-        </div>
-
-        <div class="bar"
-            style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Jquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Jplus" data-value="1">+1</div>
             <div class="Jplus" data-value="10">+10</div>
             <div class="Jplus" data-value="100">+100</div>
         </div>
-
-        <div class="holdings">
-            <div id="JHT" class="JHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div>
-        </div>
+        <div class="holdings"><div id="JHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
     </div>
 
+    <!-- gta게임즈 -->
     <div class="gta">
         <img src="gta1.jpg" class="i" style="left: 10px; top: 10px; height: 75px; width: 100px;">
-
-        <div class="t" id="G" style="left: 115px; top: -75px; text-shadow: 0 0 2px #fff,0 0 5px #fff">gta게임즈 (500)
-        </div>
-
+        <div class="t" id="G" style="left: 115px; top: -75px; text-shadow: 0 0 2px #fff,0 0 5px #fff">gta게임즈 (500)</div>
         <div class="t" style="left: 115px; top: -73px; font-size: 16px; text-shadow:0 0 5px #fff">
-            소개: GTA 게임즈는 기존 게임 산업의
-            틀을 깨고 혁신적인 콘텐츠를 통해 <br>
+            소개: GTA 게임즈는 기존 게임 산업의 틀을 깨고 혁신적인 콘텐츠를 통해 <br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전 세계 게이머의 관심을 사고있습니다
         </div>
-
         <div class="t" style="left: 10px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
-        <canvas id="Gchart" width="700" height="250"
-            style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
-
+        <canvas id="Gchart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
         <div class="bar">
-            <div id="Gsell" class="btn"
-                style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+            <div id="Gsell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
             </div>
-
-            <div id="Gbuy" class="btn"
-                style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+            <div id="Gbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
                 <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
             </div>
         </div>
-
-        <div class="bar"
-            style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Gminus" data-value="100">-100</div>
             <div class="Gminus" data-value="10">-10</div>
             <div class="Gminus" data-value="1">-1</div>
         </div>
-
-        <div class="bar" style="width: 130px; left: 140px;">
-            <div class="Gquantity">0</div>
-        </div>
-
-        <div class="bar"
-            style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Gquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
             <div class="Gplus" data-value="1">+1</div>
             <div class="Gplus" data-value="10">+10</div>
             <div class="Gplus" data-value="100">+100</div>
         </div>
-
-        <div class="holdings">
-            <div id="GHT" class="GHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div>
-        </div>
+        <div class="holdings"><div id="GHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
     </div>
 
     <div class="Balance">
-        <div class="balance"
-            style="margin-top: 2px;  margin-left: 8px; font-weight: bold;text-shadow: 0 0 2px #FF4D4D, 0 0 5px #FF4D4D">
+        <div class="balance" style="margin-top: 2px; margin-left: 8px; font-weight: bold;text-shadow: 0 0 2px #FF4D4D, 0 0 5px #FF4D4D">
             잔액:2500
         </div>
     </div>
 
-    <img src="pepe.gif" id="pepe" draggable="false"
-        style="position: absolute; left: 0px; top: 0px; height: 100px; opacity: 0;">
+    <img src="pepe.gif" id="pepe" draggable="false" style="position: absolute; left: 0px; top: 0px; height: 100px; opacity: 0;">
+
+    <!-- 거래 알림 -->
+    <div id="tradeNotice"></div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
-        let i = 0;
         let U = 0;
-        let buy = [];
         let Balance = 2500;
-        let gametime = 0;
         let pepeclick = false;
 
         let stocks = {
             S: { price: 1500, history: [1500] },
             A: { price: 1000, history: [1000] },
-            J: { price: 100, history: [100] },
-            G: { price: 500, history: [500] }
+            J: { price: 100,  history: [100]  },
+            G: { price: 500,  history: [500]  }
         };
 
-        let select = {
-            S: 0,
-            A: 0,
-            J: 0,
-            G: 0
-        };
+        let select   = { S: 0, A: 0, J: 0, G: 0 };
+        let holdings = { S: 0, A: 0, J: 0, G: 0 };
 
-        let holdings = {
-            S: 0,
-            A: 0,
-            J: 0,
-            G: 0
-        };
+        const stockName = { S: "상록전자", A: "안산제약", J: "주원금융", G: "gta게임즈" };
 
-        const stockName = {
-            S: "상록전자",
-            A: "안산제약",
-            J: "주원금융",
-            G: "gta게임즈"
-        };
-
+        // 캔버스
         const Scanvas = document.getElementById("Schart");
         const Acanvas = document.getElementById("Achart");
         const Jcanvas = document.getElementById("Jchart");
         const Gcanvas = document.getElementById("Gchart");
-
         const Sctx = Scanvas.getContext("2d");
         const Actx = Acanvas.getContext("2d");
         const Jctx = Jcanvas.getContext("2d");
         const Gctx = Gcanvas.getContext("2d");
 
+        // ── 차트 그리기 ──────────────────────────────────────
         function drawChart(ctx, canvas, history) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             if (!history || history.length < 2) return;
 
             let min = Math.min(...history);
             let max = Math.max(...history);
+            if (min === max) { min -= 1; max += 1; }
 
-            if (min === max) {
-                min -= 1;
-                max += 1;
-            }
-
-            const pad = Math.max(10, (max - min) * 0.15);
-            const low = min - pad;
-            const high = max + pad;
+            const pad   = Math.max(10, (max - min) * 0.15);
+            const low   = min - pad;
+            const high  = max + pad;
             const range = high - low;
-
             const stepX = canvas.width / (history.length - 1);
 
+            const toY = v => canvas.height - ((v - low) / range) * canvas.height;
+
             ctx.beginPath();
-            ctx.moveTo(0, canvas.height - ((history[0] - low) / range) * canvas.height);
-
-            for (let idx = 1; idx < history.length; idx++) {
-                const x = stepX * idx;
-                const y = canvas.height - ((history[idx] - low) / range) * canvas.height;
-                ctx.lineTo(x, y);
-            }
-
+            ctx.moveTo(0, toY(history[0]));
+            for (let i = 1; i < history.length; i++) ctx.lineTo(stepX * i, toY(history[i]));
             ctx.lineTo(canvas.width, canvas.height);
             ctx.lineTo(0, canvas.height);
             ctx.closePath();
@@ -551,19 +412,12 @@
             const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
             grad.addColorStop(0, "rgba(255,0,0,0.35)");
             grad.addColorStop(1, "rgba(255,0,0,0)");
-
             ctx.fillStyle = grad;
             ctx.fill();
 
             ctx.beginPath();
-            ctx.moveTo(0, canvas.height - ((history[0] - low) / range) * canvas.height);
-
-            for (let idx = 1; idx < history.length; idx++) {
-                const x = stepX * idx;
-                const y = canvas.height - ((history[idx] - low) / range) * canvas.height;
-                ctx.lineTo(x, y);
-            }
-
+            ctx.moveTo(0, toY(history[0]));
+            for (let i = 1; i < history.length; i++) ctx.lineTo(stepX * i, toY(history[i]));
             ctx.strokeStyle = "red";
             ctx.lineWidth = 3;
             ctx.stroke();
@@ -576,6 +430,7 @@
             drawChart(Gctx, Gcanvas, stocks.G.history);
         }
 
+        // ── UI 업데이트 ────────────────────────────────────────
         function updateUI() {
             document.querySelector(".balance").textContent = "잔액:" + Balance;
 
@@ -594,14 +449,24 @@
             document.getElementById("JHT").textContent = "×" + holdings.J;
             document.getElementById("GHT").textContent = "×" + holdings.G;
 
-            if (U == 1) {
-                drawAll();
-            }
+            if (U === 1) drawAll();
         }
 
+        // ── 거래 알림 팝업 ─────────────────────────────────────
+        let noticeTimer = null;
+        function showNotice(msg, color) {
+            const el = document.getElementById("tradeNotice");
+            el.textContent = msg;
+            el.style.borderLeft = `4px solid ${color}`;
+            el.classList.add("show");
+            clearTimeout(noticeTimer);
+            noticeTimer = setTimeout(() => el.classList.remove("show"), 2000);
+        }
+
+        // ── 소켓 이벤트 ───────────────────────────────────────
         socket.on("init", (data) => {
-            stocks = data.stocks;
-            Balance = data.user.balance;
+            stocks   = data.stocks;
+            Balance  = data.user.balance;
             holdings = data.user.holdings;
             updateUI();
         });
@@ -612,7 +477,7 @@
         });
 
         socket.on("userUpdate", (user) => {
-            Balance = user.balance;
+            Balance  = user.balance;
             holdings = user.holdings;
             updateUI();
         });
@@ -620,40 +485,34 @@
         socket.on("tradeResult", (result) => {
             if (result.ok) {
                 if (result.side === "buy") {
+                    const cost = stocks[result.type].price * result.amount;
+                    showNotice(`✅ ${stockName[result.type]} ${result.amount}주 매수 (-${cost})`, "#DC2626");
                     select[result.type] = 0;
-                } else if (result.side === "sell") {
-                    select[result.type] -= result.amount;
-                    if (select[result.type] < 0) select[result.type] = 0;
+                } else {
+                    const gain = stocks[result.type].price * result.amount;
+                    showNotice(`✅ ${stockName[result.type]} ${result.amount}주 매도 (+${gain})`, "#3B82F6");
+                    select[result.type] = Math.max(0, select[result.type] - result.amount);
                 }
-                updateUI();
+            } else {
+                showNotice("❌ " + result.msg, "#888");
             }
+            updateUI();
         });
 
-        document.getElementById("pepe").addEventListener("click", function () {
-            if (pepeclick) {
-                Balance += 500;
-                pepeclick = false;
-                pepe.style.opacity = 0;
-                document.querySelector(".balance").textContent = "잔액:" + Balance;
-            }
-        });
-
+        // ── 매수/매도 함수 ────────────────────────────────────
         function buyStock(type) {
-            let amount = select[type];
-            if (amount > 0) {
-                socket.emit("buy", { type, amount });
-            }
+            const amount = select[type];
+            if (amount > 0) socket.emit("buy", { type, amount });
         }
 
         function sellStock(type) {
-            let amount = Math.min(select[type], holdings[type]);
-            if (amount > 0) {
-                socket.emit("sell", { type, amount });
-            }
+            const amount = Math.min(select[type], holdings[type]);
+            if (amount > 0) socket.emit("sell", { type, amount });
         }
 
+        // ── 버튼 이벤트 등록 ──────────────────────────────────
         function setupControls(type) {
-            document.getElementById(type + "buy").onclick = () => buyStock(type);
+            document.getElementById(type + "buy").onclick  = () => buyStock(type);
             document.getElementById(type + "sell").onclick = () => sellStock(type);
 
             document.querySelectorAll(`.${type}plus`).forEach(btn => {
@@ -675,156 +534,69 @@
 
         ["S", "A", "J", "G"].forEach(setupControls);
 
-        document.getElementById('graphBtn').addEventListener("click", function () {
-            const graph = document.getElementById("graphBtn");
-            const graphText = document.getElementById("graphText");
-            const imgs = document.querySelectorAll(".i");
-            const texts = document.querySelectorAll(".t");
+        // ── 그래프/정보 토글 ──────────────────────────────────
+        document.getElementById("graphBtn").addEventListener("click", function () {
             U = 1;
-
-            graph.style.background = "transparent";
-            graphText.style.color = "#fff";
+            document.getElementById("graphBtn").style.background = "transparent";
+            document.getElementById("graphText").style.color = "#fff";
+            document.getElementById("infoBtn").style.background = "#fff";
+            document.getElementById("infoText").style.color = "#000";
+            document.querySelectorAll(".i").forEach(el => el.style.opacity = "0");
+            document.querySelectorAll(".t").forEach(el => el.style.opacity = "0");
             drawAll();
-
-            const info = document.getElementById("infoBtn");
-            const infoText = document.getElementById("infoText");
-
-            info.style.background = "#fff";
-            infoText.style.color = "#000";
-
-            for (let i = 0; i < imgs.length; i++) {
-                imgs[i].style.opacity = "0";
-            }
-            for (let i = 0; i < texts.length; i++) {
-                texts[i].style.opacity = "0";
-            }
         });
 
-        document.getElementById('infoBtn').addEventListener("click", function () {
-            const info = document.getElementById("infoBtn");
-            const infoText = document.getElementById("infoText");
-            const imgs = document.querySelectorAll(".i");
-            const texts = document.querySelectorAll(".t");
+        document.getElementById("infoBtn").addEventListener("click", function () {
             U = 0;
-
-            info.style.background = "transparent";
-            infoText.style.color = "#fff";
-
-            Sctx.clearRect(0, 0, Scanvas.width, Scanvas.height);
-            Actx.clearRect(0, 0, Acanvas.width, Acanvas.height);
-            Jctx.clearRect(0, 0, Jcanvas.width, Jcanvas.height);
-            Gctx.clearRect(0, 0, Gcanvas.width, Gcanvas.height);
-
-            const graph = document.getElementById("graphBtn");
-            const graphText = document.getElementById("graphText");
-
-            graph.style.background = "#fff";
-            graphText.style.color = "#000";
-
-            for (let i = 0; i < imgs.length; i++) {
-                imgs[i].style.opacity = "1";
-            }
-            for (let i = 0; i < texts.length; i++) {
-                texts[i].style.opacity = "1";
-            }
+            document.getElementById("infoBtn").style.background = "transparent";
+            document.getElementById("infoText").style.color = "#fff";
+            document.getElementById("graphBtn").style.background = "#fff";
+            document.getElementById("graphText").style.color = "#000";
+            [Sctx, Actx, Jctx, Gctx].forEach((ctx, i) => {
+                const cvs = [Scanvas, Acanvas, Jcanvas, Gcanvas][i];
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+            });
+            document.querySelectorAll(".i").forEach(el => el.style.opacity = "1");
+            document.querySelectorAll(".t").forEach(el => el.style.opacity = "1");
         });
 
+        // ── 클릭 이펙트 ───────────────────────────────────────
         document.addEventListener("mousedown", function (e) {
             const touch = document.createElement("div");
             touch.className = "Touch";
             touch.style.left = e.pageX + "px";
-            touch.style.top = e.pageY + "px";
-            touch.style.background = `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, 0.5)`;
-
+            touch.style.top  = e.pageY + "px";
+            touch.style.background = `rgba(${Math.random()*255|0}, ${Math.random()*255|0}, 255, 0.5)`;
             document.body.appendChild(touch);
-            setTimeout(() => {
-                touch.remove();
-            }, 500);
+            setTimeout(() => touch.remove(), 500);
         });
-        socket.on("buy", ({ type, amount }) => {
 
-            let user = users[socket.id];
-
-            let cost = stockData[type].price * amount;
-
-            if (user.balance >= cost) {
-
-                user.balance -= cost;
-                user.holdings[type] += amount;
-
-                socket.emit("userUpdate", user);
-
-                socket.emit("tradeResult", {
-                    ok: true,
-                    side: "buy",
-                    type,
-                    amount
-                });
-            }
-        });
-        socket.on("sell", ({ type, amount }) => {
-
-            let user = users[socket.id];
-
-            if (user.holdings[type] >= amount) {
-
-                let gain = stockData[type].price * amount;
-
-                user.balance += gain;
-                user.holdings[type] -= amount;
-
-                socket.emit("userUpdate", user);
-        
-                socket.emit("tradeResult", {
-                    ok: true,
-                    side: "sell",
-                    type,
-                    amount
-                });
+        // ── 페페 이스터에그 ───────────────────────────────────
+        document.getElementById("pepe").addEventListener("click", function () {
+            if (pepeclick) {
+                Balance += 500;
+                pepeclick = false;
+                pepe.style.opacity = 0;
+                updateUI();
             }
         });
 
-        let x = 0;
-        let y = 0;
-        let mx = 1;
-        let my = 1;
-        let pepe = document.getElementById("pepe");
+        let x = 0, y = 0, mx = 1, my = 1;
+        const pepe = document.getElementById("pepe");
 
         function pepemove() {
-            x += mx;
-            y += my;
-
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-
-            const pepewidth = pepe.offsetWidth;
-            const pepeheight = pepe.offsetHeight;
-
-            if (x <= 0) {
-                x = 0;
-                mx *= -1;
-            }
-            if (x + pepewidth >= width) {
-                x = width - pepewidth;
-                mx *= -1;
-            }
-            if (y <= 0) {
-                y = 0;
-                my *= -1;
-            }
-            if (y + pepeheight >= height) {
-                y = height - pepeheight;
-                my *= -1;
-            }
-
+            x += mx; y += my;
+            const w = window.innerWidth, h = window.innerHeight;
+            const pw = pepe.offsetWidth, ph = pepe.offsetHeight;
+            if (x <= 0)        { x = 0;      mx *= -1; }
+            if (x + pw >= w)   { x = w - pw; mx *= -1; }
+            if (y <= 0)        { y = 0;      my *= -1; }
+            if (y + ph >= h)   { y = h - ph; my *= -1; }
             pepe.style.left = x + "px";
-            pepe.style.top = y + "px";
-
+            pepe.style.top  = y + "px";
             requestAnimationFrame(pepemove);
         }
         pepemove();
-
     </script>
 </body>
-
 </html>
