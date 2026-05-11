@@ -20,7 +20,7 @@ function updateStock(stock, change, minPrice) {
     stock.price += Math.random() > 0.5 ? change : -change;
     if (stock.price < minPrice) stock.price = minPrice;
     stock.history.push(stock.price);
-    if (stock.history.length > 30) stock.history.shift();
+    if (stock.history.length > 15) stock.history.shift();
 }
 
 setInterval(() => {
