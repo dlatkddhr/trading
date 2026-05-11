@@ -1,15 +1,9 @@
-const express = require("express");
-const app = express();
+const socket = io();
 
-const http = require("http");
-const server = http.createServer(app);
+let Balance = 2500;
+let U = 0;
 
-const { Server } = require("socket.io");
-const io = new Server(server);
-
-app.use(express.static("public"));
-
-let stockData = {
+let stocks = {
     S: {
         price: 1500,
         history: [1500]
@@ -31,161 +25,326 @@ let stockData = {
     }
 };
 
-let users = {};
+let select = {
+    S: 0,
+    A: 0,
+    J: 0,
+    G: 0
+};
 
-function updateStock(type, change, minPrice) {
+let holdings = {
+    S: 0,
+    A: 0,
+    J: 0,
+    G: 0
+};
 
-    stockData[type].price += Math.random() > 0.5
-        ? change
-        : -change;
+const stockName = {
+    S: "상록전자",
+    A: "안산제약",
+    J: "주원금융",
+    G: "gta게임즈"
+};
 
-    if (stockData[type].price < minPrice) {
-        stockData[type].price = minPrice;
+const Scanvas = document.getElementById("Schart");
+const Acanvas = document.getElementById("Achart");
+const Jcanvas = document.getElementById("Jchart");
+const Gcanvas = document.getElementById("Gchart");
+
+const Sctx = Scanvas.getContext("2d");
+const Actx = Acanvas.getContext("2d");
+const Jctx = Jcanvas.getContext("2d");
+const Gctx = Gcanvas.getContext("2d");
+
+function drawChart(ctx, canvas, history) {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!history || history.length < 2) return;
+
+    let min = Math.min(...history);
+    let max = Math.max(...history);
+
+    if (min === max) {
+        min -= 1;
+        max += 1;
     }
 
-    stockData[type].history.push(
-        stockData[type].price
+    const padding = 20;
+
+    const graphWidth = canvas.width - padding * 2;
+    const graphHeight = canvas.height - padding * 2;
+
+    ctx.beginPath();
+
+    for (let i = 0; i < history.length; i++) {
+
+        const x =
+            padding +
+            (i / (history.length - 1)) * graphWidth;
+
+        const y =
+            padding +
+            graphHeight -
+            ((history[i] - min) / (max - min)) * graphHeight;
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        }
+
+        else {
+            ctx.lineTo(x, y);
+        }
+    }
+
+    ctx.strokeStyle = "#ff4444";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+function drawAll() {
+
+    drawChart(
+        Sctx,
+        Scanvas,
+        stocks.S.history
     );
 
-    if (stockData[type].history.length > 30) {
-        stockData[type].history.shift();
+    drawChart(
+        Actx,
+        Acanvas,
+        stocks.A.history
+    );
+
+    drawChart(
+        Jctx,
+        Jcanvas,
+        stocks.J.history
+    );
+
+    drawChart(
+        Gctx,
+        Gcanvas,
+        stocks.G.history
+    );
+}
+
+function updateUI() {
+
+    if (
+        !stocks.S ||
+        !stocks.A ||
+        !stocks.J ||
+        !stocks.G
+    ) return;
+
+    document.querySelector(".balance").textContent =
+        "잔액:" + Balance;
+
+    document.getElementById("S").textContent =
+        `${stockName.S} (${stocks.S.price})`;
+
+    document.getElementById("A").textContent =
+        `${stockName.A} (${stocks.A.price})`;
+
+    document.getElementById("J").textContent =
+        `${stockName.J} (${stocks.J.price})`;
+
+    document.getElementById("G").textContent =
+        `${stockName.G} (${stocks.G.price})`;
+
+    document.querySelector(".Squantity").textContent =
+        select.S;
+
+    document.querySelector(".Aquantity").textContent =
+        select.A;
+
+    document.querySelector(".Jquantity").textContent =
+        select.J;
+
+    document.querySelector(".Gquantity").textContent =
+        select.G;
+
+    document.getElementById("SHT").textContent =
+        "×" + holdings.S;
+
+    document.getElementById("AHT").textContent =
+        "×" + holdings.A;
+
+    document.getElementById("JHT").textContent =
+        "×" + holdings.J;
+
+    document.getElementById("GHT").textContent =
+        "×" + holdings.G;
+
+    if (U === 1) {
+        drawAll();
     }
 }
 
-setInterval(() => {
+socket.on("init", (data) => {
 
-    updateStock("S", 50, 100);
-    updateStock("A", 50, 100);
-    updateStock("J", 25, 10);
-    updateStock("G", 75, 50);
+    stocks = data.stocks;
 
-    io.emit("stockUpdate", stockData);
+    Balance = data.user.balance;
 
-    console.log("주식 변동");
+    holdings = data.user.holdings;
 
-}, 60000);
-
-// 테스트용
-// }, 5000);
-
-io.on("connection", (socket) => {
-
-    console.log("유저 접속");
-
-    users[socket.id] = {
-
-        balance: 2500,
-
-        holdings: {
-            S: 0,
-            A: 0,
-            J: 0,
-            G: 0
-        }
-    };
-
-    socket.emit("init", {
-        stocks: stockData,
-        user: users[socket.id]
-    });
-
-    socket.on("buy", ({ type, amount }) => {
-
-        const user = users[socket.id];
-
-        if (!user) return;
-
-        const price =
-            stockData[type].price * amount;
-
-        if (
-            amount > 0 &&
-            user.balance >= price
-        ) {
-
-            user.balance -= price;
-
-            user.holdings[type] += amount;
-
-            socket.emit(
-                "userUpdate",
-                user
-            );
-
-            socket.emit("tradeResult", {
-                ok: true,
-                side: "buy",
-                type,
-                amount
-            });
-
-            console.log(
-                `${type} ${amount}개 매수`
-            );
-        }
-
-        else {
-
-            socket.emit("tradeResult", {
-                ok: false
-            });
-        }
-    });
-
-    socket.on("sell", ({ type, amount }) => {
-
-        const user = users[socket.id];
-
-        if (!user) return;
-
-        if (
-            amount > 0 &&
-            user.holdings[type] >= amount
-        ) {
-
-            const gain =
-                stockData[type].price * amount;
-
-            user.balance += gain;
-
-            user.holdings[type] -= amount;
-
-            socket.emit(
-                "userUpdate",
-                user
-            );
-
-            socket.emit("tradeResult", {
-                ok: true,
-                side: "sell",
-                type,
-                amount
-            });
-
-            console.log(
-                `${type} ${amount}개 매도`
-            );
-        }
-
-        else {
-
-            socket.emit("tradeResult", {
-                ok: false
-            });
-        }
-    });
-
-    socket.on("disconnect", () => {
-
-        console.log("유저 퇴장");
-
-        delete users[socket.id];
-    });
+    updateUI();
 });
 
-const PORT = process.env.PORT || 3000;
+socket.on("stockUpdate", (serverStocks) => {
 
-server.listen(PORT, () => {
+    if (!serverStocks.S) return;
 
-    console.log("서버 실행중");
+    stocks = serverStocks;
+
+    updateUI();
 });
+
+socket.on("userUpdate", (user) => {
+
+    Balance = user.balance;
+
+    holdings = user.holdings;
+
+    updateUI();
+});
+
+socket.on("tradeResult", (result) => {
+
+    if (result.ok) {
+
+        if (result.side === "buy") {
+            select[result.type] = 0;
+        }
+
+        if (result.side === "sell") {
+
+            select[result.type] -= result.amount;
+
+            if (select[result.type] < 0) {
+                select[result.type] = 0;
+            }
+        }
+
+        updateUI();
+    }
+});
+
+function buyStock(type) {
+
+    const amount = select[type];
+
+    if (amount <= 0) return;
+
+    socket.emit("buy", {
+        type,
+        amount
+    });
+}
+
+function sellStock(type) {
+
+    const amount = Math.min(
+        select[type],
+        holdings[type]
+    );
+
+    if (amount <= 0) return;
+
+    socket.emit("sell", {
+        type,
+        amount
+    });
+}
+
+function setupControls(type) {
+
+    document.getElementById(type + "buy").onclick =
+        () => buyStock(type);
+
+    document.getElementById(type + "sell").onclick =
+        () => sellStock(type);
+
+    document.querySelectorAll(`.${type}plus`)
+        .forEach(btn => {
+
+            btn.onclick = () => {
+
+                select[type] += Number(
+                    btn.dataset.value
+                );
+
+                if (select[type] > 500) {
+                    select[type] = 500;
+                }
+
+                updateUI();
+            };
+        });
+
+    document.querySelectorAll(`.${type}minus`)
+        .forEach(btn => {
+
+            btn.onclick = () => {
+
+                select[type] -= Number(
+                    btn.dataset.value
+                );
+
+                if (select[type] < 0) {
+                    select[type] = 0;
+                }
+
+                updateUI();
+            };
+        });
+}
+
+["S", "A", "J", "G"]
+    .forEach(setupControls);
+
+document.getElementById("graphBtn")
+    .addEventListener("click", function () {
+
+        U = 1;
+
+        drawAll();
+    });
+
+document.getElementById("infoBtn")
+    .addEventListener("click", function () {
+
+        U = 0;
+
+        Sctx.clearRect(
+            0,
+            0,
+            Scanvas.width,
+            Scanvas.height
+        );
+
+        Actx.clearRect(
+            0,
+            0,
+            Acanvas.width,
+            Acanvas.height
+        );
+
+        Jctx.clearRect(
+            0,
+            0,
+            Jcanvas.width,
+            Jcanvas.height
+        );
+
+        Gctx.clearRect(
+            0,
+            0,
+            Gcanvas.width,
+            Gcanvas.height
+        );
+    });
+
+updateUI();
