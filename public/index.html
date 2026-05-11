@@ -176,7 +176,7 @@
         100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.5); }
     }
 
-    canvas { pointer-events: none; }
+    canvas { pointer-events: none; visibility: hidden; }
 
     /* 거래 알림 팝업 */
     #tradeNotice {
@@ -585,6 +585,8 @@
             document.getElementById("infoText").style.color = "#000";
             document.querySelectorAll(".i").forEach(el => el.style.opacity = "0");
             document.querySelectorAll(".t").forEach(el => el.style.opacity = "0");
+            // 캔버스 보이게
+            [Scanvas, Acanvas, Jcanvas, Gcanvas].forEach(c => c.style.visibility = "visible");
             drawAllAnimated();
         });
 
@@ -594,10 +596,13 @@
             document.getElementById("infoText").style.color = "#fff";
             document.getElementById("graphBtn").style.background = "#fff";
             document.getElementById("graphText").style.color = "#000";
+            // 캔버스 숨기고 애니메이션 중지
             [Sctx, Actx, Jctx, Gctx].forEach((ctx, i) => {
                 const cvs = [Scanvas, Acanvas, Jcanvas, Gcanvas][i];
                 ctx.clearRect(0, 0, cvs.width, cvs.height);
+                cvs.style.visibility = "hidden";
             });
+            ["S", "A", "J", "G"].forEach(type => clearTimeout(animRAF[type]));
             document.querySelectorAll(".i").forEach(el => el.style.opacity = "1");
             document.querySelectorAll(".t").forEach(el => el.style.opacity = "1");
         });
