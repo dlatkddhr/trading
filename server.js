@@ -41,10 +41,10 @@ const NEWS = {
 };
 
 let stockData = {
-    S: { price: 1500, history: [1500], news: "" },
-    A: { price: 1000, history: [1000], news: "" },
-    J: { price: 100,  history: [100],  news: "" },
-    G: { price: 500,  history: [500],  news: "" }
+    S: { price: 1500, history: [1500], news: NEWS.S[Math.floor(Math.random() * NEWS.S.length)].text },
+    A: { price: 1000, history: [1000], news: NEWS.A[Math.floor(Math.random() * NEWS.A.length)].text },
+    J: { price: 100,  history: [100],  news: NEWS.J[Math.floor(Math.random() * NEWS.J.length)].text },
+    G: { price: 500,  history: [500],  news: NEWS.G[Math.floor(Math.random() * NEWS.G.length)].text }
 };
 
 const users = {};
