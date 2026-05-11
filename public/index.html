@@ -630,22 +630,22 @@
         const pepe = document.getElementById("pepe");
 
         let x = 0, y = 0, mx = 1, my = 1;
-
+        
         function spawnPepe() {
         
             if (pepeclick) return;
         
-            // GIF 처음부터 재생
-            pepe.src = "";
-            pepe.src = "pepe.gif";
+            // GIF 새로고침
+            pepe.src = "pepe.gif?t=" + Date.now();
         
             const w = window.innerWidth;
             const h = window.innerHeight;
-            const pw = pepe.offsetWidth || 100;
-            const ph = pepe.offsetHeight || 100;
         
-            x = Math.random() * Math.max(0, w - pw);
-            y = Math.random() * Math.max(0, h - ph);
+            const pw = 100;
+            const ph = 100;
+        
+            x = Math.random() * (w - pw);
+            y = Math.random() * (h - ph);
         
             pepe.style.left = x + "px";
             pepe.style.top = y + "px";
@@ -656,56 +656,57 @@
             pepeclick = true;
         
             setTimeout(() => {
+        
                 pepeclick = false;
-
+        
                 pepe.style.opacity = 0;
                 pepe.style.pointerEvents = "none";
+        
             }, 12500);
         }
-
+        
         setInterval(spawnPepe, 12500);
-
+        
         function pepemove() {
-
-            // 보일 때만 이동
+        
             if (pepeclick) {
-
+        
                 x += mx;
                 y += my;
-
+        
                 const w = window.innerWidth;
                 const h = window.innerHeight;
-
-                const pw = pepe.offsetWidth || 100;
-                const ph = pepe.offsetHeight || 100;
+        
+                const pw = pepe.offsetWidth;
+                const ph = pepe.offsetHeight;
         
                 if (x <= 0) {
                     x = 0;
                     mx *= -1;
                 }
-
+        
                 if (x + pw >= w) {
                     x = w - pw;
                     mx *= -1;
                 }
-
+        
                 if (y <= 0) {
                     y = 0;
                     my *= -1;
                 }
-
+        
                 if (y + ph >= h) {
                     y = h - ph;
                     my *= -1;
                 }
-
+        
                 pepe.style.left = x + "px";
                 pepe.style.top = y + "px";
             }
-
+        
             requestAnimationFrame(pepemove);
         }
-
+        
         pepemove();
         spawnPepe();
     </script>
