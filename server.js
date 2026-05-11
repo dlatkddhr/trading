@@ -29,7 +29,7 @@ setInterval(() => {
     updateStock(stockData.J, 25,  10);
     updateStock(stockData.G, 75,  50);
     io.emit("stockUpdate", stockData);
-}, 3000);
+}, 60000); // 1분
 
 io.on("connection", (socket) => {
     console.log("유저 접속:", socket.id);
