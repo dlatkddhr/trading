@@ -511,11 +511,18 @@
             Balance  = data.user.balance;
             holdings = data.user.holdings;
             updateUI();
+            // 백그라운드에서 그리기 시작 (정보 탭이 기본이라 캔버스는 숨김 유지)
+            drawAllAnimated();
         });
 
         socket.on("stockUpdate", (serverStocks) => {
             stocks = serverStocks;
             updateUI();
+            // 탭 전환 없이 새 포인트만 추가
+            ["S", "A", "J", "G"].forEach(type => {
+                animState[type] = stocks[type].history.length - 1;
+                animateChart(type);
+            });
         });
 
         socket.on("userUpdate", (user) => {
@@ -585,9 +592,8 @@
             document.getElementById("infoText").style.color = "#000";
             document.querySelectorAll(".i").forEach(el => el.style.opacity = "0");
             document.querySelectorAll(".t").forEach(el => el.style.opacity = "0");
-            // 캔버스 보이게
+            // 캔버스 그냥 보이게만
             [Scanvas, Acanvas, Jcanvas, Gcanvas].forEach(c => c.style.visibility = "visible");
-            drawAllAnimated();
         });
 
         document.getElementById("infoBtn").addEventListener("click", function () {
@@ -596,13 +602,8 @@
             document.getElementById("infoText").style.color = "#fff";
             document.getElementById("graphBtn").style.background = "#fff";
             document.getElementById("graphText").style.color = "#000";
-            // 캔버스 숨기고 애니메이션 중지
-            [Sctx, Actx, Jctx, Gctx].forEach((ctx, i) => {
-                const cvs = [Scanvas, Acanvas, Jcanvas, Gcanvas][i];
-                ctx.clearRect(0, 0, cvs.width, cvs.height);
-                cvs.style.visibility = "hidden";
-            });
-            ["S", "A", "J", "G"].forEach(type => clearTimeout(animRAF[type]));
+            // 지우지 않고 숨기기만
+            [Scanvas, Acanvas, Jcanvas, Gcanvas].forEach(c => c.style.visibility = "hidden");
             document.querySelectorAll(".i").forEach(el => el.style.opacity = "1");
             document.querySelectorAll(".t").forEach(el => el.style.opacity = "1");
         });
