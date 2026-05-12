@@ -71,7 +71,7 @@ function updateStock(type, change, minPrice) {
     if (stock.price < minPrice) stock.price = minPrice;
 
     stock.history.push(stock.price);
-    if (stock.history.length > 15) stock.history.shift();
+    if (stock.history.length > 25) stock.history.shift();
 }
 
 // ✅ 업데이트 주기 60초 → 30초
