@@ -7,34 +7,36 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
+// 각 뉴스의 chance = 상승 확률 (1~100 정수 기준)
+// roll(1~100)이 chance 이하면 상승, 초과면 하락
 const NEWS = {
     S: [
-        { text: "상록전자에서 초전도체 개발에 성공하였습니다", min: 0.90, max: 1.00 },
-        { text: "상록전자에서 반도체를 개발하였습니다", min: 0.70, max: 0.90 },
-        { text: "상록전자에서 노조와 협상을 하였습니다", min: 0.40, max: 0.60 },
-        { text: "상록전자에서 만든 반도체에서 버그가 발생하였습니다", min: 0.00, max: 0.50 },
-        { text: "상록전자에서 노조와 협상을 파괴하였습니다", min: 0.00, max: 0.30 }
+        { text: "상록전자에서 초전도체 개발에 성공하였습니다",       chance: 90 },
+        { text: "상록전자에서 반도체를 개발하였습니다",             chance: 70 },
+        { text: "상록전자에서 노조와 협상을 하였습니다",            chance: 50 },
+        { text: "상록전자에서 만든 반도체에서 버그가 발생하였습니다", chance: 40 },
+        { text: "상록전자에서 노조와 협상을 파괴하였습니다",         chance: 30 }
     ],
     A: [
-        { text: "안산제약에서 탈모 치료제를 개발 성공했습니다", min: 0.90, max: 1.00 },
-        { text: "안산제약에서 스프레이형 약을 개발 성공하였습니다", min: 0.70, max: 0.90 },
-        { text: "안산제약에서 한타바이러스 백신개발에 성공하였습니다", min: 0.40, max: 0.60 },
-        { text: "안산제약에서 1끼식사를 하나로 챙길 수 있는 종합영양제에서 부작용이 검출되었습니다", min: 0.00, max: 0.50 },
-        { text: "안산제약에서 만든 탈모치료제의 부작용이 발견되었습니다", min: 0.00, max: 0.30 }
+        { text: "안산제약에서 탈모 치료제를 개발 성공했습니다",                                   chance: 90 },
+        { text: "안산제약에서 스프레이형 약을 개발 성공하였습니다",                               chance: 70 },
+        { text: "안산제약에서 한타바이러스 백신개발에 성공하였습니다",                             chance: 50 },
+        { text: "안산제약에서 1끼식사를 하나로 챙길 수 있는 종합영양제에서 부작용이 검출되었습니다", chance: 40 },
+        { text: "안산제약에서 만든 탈모치료제의 부작용이 발견되었습니다",                          chance: 30 }
     ],
     J: [
-        { text: "러시아의 대통령이 전쟁을 끝내겠다고 이번 정상회담에서 입장을 내세웠습니다", min: 0.90, max: 1.00 },
-        { text: "미국에서 관세를 감소시켜서 시장이 안정세를 취했습니다", min: 0.70, max: 0.90 },
-        { text: "주원금융에서 이자의 강도를 낮추었습니다", min: 0.40, max: 0.60 },
-        { text: "북한에서 새로운 핵폭탄을 개발하였습니다", min: 0.00, max: 0.50 },
-        { text: "주원금융의 보안이 취약해 해킹당했습니다", min: 0.00, max: 0.30 }
+        { text: "러시아의 대통령이 전쟁을 끝내겠다고 이번 정상회담에서 입장을 내세웠습니다", chance: 90 },
+        { text: "미국에서 관세를 감소시켜서 시장이 안정세를 취했습니다",                  chance: 70 },
+        { text: "주원금융에서 이자의 강도를 낮추었습니다",                               chance: 50 },
+        { text: "북한에서 새로운 핵폭탄을 개발하였습니다",                               chance: 40 },
+        { text: "주원금융의 보안이 취약해 해킹당했습니다",                               chance: 30 }
     ],
     G: [
-        { text: "gta게임즈의 게임이 E스포츠 올림픽 종목으로 선정되었습니다", min: 0.90, max: 1.00 },
-        { text: "gta게임즈에서 초보자도 쉽게 사용할 수 있는 게임 엔진을 만들었습니다", min: 0.70, max: 0.90 },
-        { text: "gta게임즈에서 신작게임을 개발하였습니다", min: 0.40, max: 0.60 },
-        { text: "gta게임즈의 신작게임이 개발되기 전에 유출되었습니다", min: 0.00, max: 0.50 },
-        { text: "gta게임즈에서 만든 fps게임의 핵유저가 30% 이상이라는 논란이 있습니다", min: 0.00, max: 0.30 }
+        { text: "gta게임즈의 게임이 E스포츠 올림픽 종목으로 선정되었습니다",             chance: 90 },
+        { text: "gta게임즈에서 초보자도 쉽게 사용할 수 있는 게임 엔진을 만들었습니다",   chance: 70 },
+        { text: "gta게임즈에서 신작게임을 개발하였습니다",                              chance: 50 },
+        { text: "gta게임즈의 신작게임이 개발되기 전에 유출되었습니다",                   chance: 40 },
+        { text: "gta게임즈에서 만든 fps게임의 핵유저가 30% 이상이라는 논란이 있습니다",  chance: 30 }
     ]
 };
 
@@ -47,30 +49,17 @@ let stockData = {
 
 const users = {};
 
-// ✅ 수정된 pickNews()
-// 먼저 랜덤값(0~1)을 뽑아서 상승/하락을 결정한 뒤,
-// 그 랜덤값이 min~max 범위 안에 포함되는 뉴스들 중에서 하나를 선택.
-// → 뉴스 내용과 주가 방향이 반드시 일치함.
+// 뉴스 5개 중 랜덤으로 하나 선택
+// 1~100 정수(roll)를 뽑아서 그 뉴스의 chance 이하면 상승, 초과면 하락
+// 예) 극호재(chance=90): roll이 1~90이면 상승(90%), 91~100이면 하락(10%)
+//     극악재(chance=30): roll이 1~30이면 상승(30%), 31~100이면 하락(70%)
 function pickNews(type) {
     const list = NEWS[type];
-    const roll = Math.random(); // 0.0 ~ 1.0 사이 랜덤값
-    const up = roll >= 0.5;     // 0.5 이상이면 상승, 미만이면 하락
+    const item = list[Math.floor(Math.random() * list.length)];
+    const roll = Math.floor(Math.random() * 100) + 1; // 1~100 정수
+    const up   = roll <= item.chance;
 
-    // roll 값이 해당 뉴스의 min~max 범위 안에 들어오는 뉴스만 필터링
-    const candidates = list.filter(item => roll >= item.min && roll <= item.max);
-
-    // 혹시 해당하는 뉴스가 없으면 방향에 맞는 뉴스 중 랜덤 선택 (폴백)
-    let chosen;
-    if (candidates.length > 0) {
-        chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    } else {
-        const fallback = list.filter(item => up ? item.min >= 0.5 : item.max <= 0.5);
-        chosen = fallback.length > 0
-            ? fallback[Math.floor(Math.random() * fallback.length)]
-            : list[Math.floor(Math.random() * list.length)];
-    }
-
-    return { text: chosen.text, up };
+    return { text: item.text, up };
 }
 
 function updateStock(type, change, minPrice) {
