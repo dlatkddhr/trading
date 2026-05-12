@@ -1,3 +1,9 @@
+<!--
+    다음에 할것
+- 그래프 안정화
+- 채팅창(명령어)
+- 매수,매도 할때 돈 추가되는거 보이게
+-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -210,11 +216,28 @@
         opacity: 1;
     }
 
-    /* ✅ 페페 클릭 유도 효과 */
-    #pepe {
+    #pepeWrap {
+        position: absolute;
+        width: 100px;
+        height: 100px;
         cursor: pointer;
-        filter: drop-shadow(0 0 8px rgba(0, 255, 0, 0.6));
     }
+    #pepe {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+    }
+    .pepe-eye {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        width: 22px;
+        height: 22px;
+        top: 28px;
+    }
+    .pepe-eye.left  { left: 26px; }
+    .pepe-eye.right { left: 55px; }
 </style>
 
 <body>
@@ -369,7 +392,11 @@
         </div>
     </div>
 
-    <img src="pepe.gif" id="pepe" draggable="false" style="position: absolute; left: 0px; top: 0px; height: 100px; opacity: 0;">
+    <div id="pepeWrap" style="left: 0px; top: 0px; opacity: 0;">
+        <img src="pepe.gif" id="pepe" draggable="false">
+        <div class="pepe-eye left"></div>
+        <div class="pepe-eye right"></div>
+    </div>
 
     <div id="tradeNotice"></div>
 
@@ -630,27 +657,22 @@
         // ─────────────────────────────────────────
         // 페페 이스터에그
         // ─────────────────────────────────────────
-        const pepe = document.getElementById("pepe");
+        const pepeWrap = document.getElementById("pepeWrap");
+        const pepeImg  = document.getElementById("pepe");
 
         let x = 0, y = 0, mx = 1, my = 1;
 
-        // ✅ 페페 클릭 핸들러 추가
-        // pepeclick이 true일 때(=페페가 화면에 있을 때)만 클릭 처리
-        pepe.addEventListener("click", function (e) {
+        // 페페 클릭 핸들러
+        pepeWrap.addEventListener("click", function (e) {
             if (!pepeclick) return;
 
-            // 이벤트 버블링 차단 (mousedown 파급 방지)
             e.stopPropagation();
 
-            // 페페 즉시 숨기기
             pepeclick = false;
-            pepe.style.opacity = 0;
-            pepe.style.pointerEvents = "none";
+            pepeWrap.style.opacity = 0;
+            pepeWrap.style.pointerEvents = "none";
 
-            // 서버에 보상 요청
             socket.emit("pepeReward");
-
-            // 보상 알림 표시
             showNotice("🐸 페페 발견! +500", "#22c55e");
         });
 
@@ -658,7 +680,7 @@
             if (pepeclick) return;
 
             // GIF 새로고침
-            pepe.src = "pepe.gif?t=" + Date.now();
+            pepeImg.src = "pepe.gif?t=" + Date.now();
 
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -668,19 +690,18 @@
             x = Math.random() * (w - pw);
             y = Math.random() * (h - ph);
 
-            pepe.style.left = x + "px";
-            pepe.style.top  = y + "px";
+            pepeWrap.style.left = x + "px";
+            pepeWrap.style.top  = y + "px";
 
-            pepe.style.opacity = 1;
-            pepe.style.pointerEvents = "auto";
+            pepeWrap.style.opacity = 1;
+            pepeWrap.style.pointerEvents = "auto";
 
             pepeclick = true;
 
-            // 12.5초 후 자동으로 사라짐
             setTimeout(() => {
                 pepeclick = false;
-                pepe.style.opacity = 0;
-                pepe.style.pointerEvents = "none";
+                pepeWrap.style.opacity = 0;
+                pepeWrap.style.pointerEvents = "none";
             }, 12500);
         }
 
@@ -693,16 +714,16 @@
 
                 const w  = window.innerWidth;
                 const h  = window.innerHeight;
-                const pw = pepe.offsetWidth;
-                const ph = pepe.offsetHeight;
+                const pw = pepeWrap.offsetWidth;
+                const ph = pepeWrap.offsetHeight;
 
-                if (x <= 0)        { x = 0;        mx *= -1; }
-                if (x + pw >= w)   { x = w - pw;   mx *= -1; }
-                if (y <= 0)        { y = 0;         my *= -1; }
-                if (y + ph >= h)   { y = h - ph;   my *= -1; }
+                if (x <= 0)      { x = 0;      mx *= -1; }
+                if (x + pw >= w) { x = w - pw; mx *= -1; }
+                if (y <= 0)      { y = 0;       my *= -1; }
+                if (y + ph >= h) { y = h - ph;  my *= -1; }
 
-                pepe.style.left = x + "px";
-                pepe.style.top  = y + "px";
+                pepeWrap.style.left = x + "px";
+                pepeWrap.style.top  = y + "px";
             }
 
             requestAnimationFrame(pepemove);
