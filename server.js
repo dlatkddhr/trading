@@ -47,12 +47,30 @@ let stockData = {
 
 const users = {};
 
+// ✅ 수정된 pickNews()
+// 먼저 랜덤값(0~1)을 뽑아서 상승/하락을 결정한 뒤,
+// 그 랜덤값이 min~max 범위 안에 포함되는 뉴스들 중에서 하나를 선택.
+// → 뉴스 내용과 주가 방향이 반드시 일치함.
 function pickNews(type) {
     const list = NEWS[type];
-    const item = list[Math.floor(Math.random() * list.length)];
-    const chance = (item.min + item.max) / 2;
-    const up = Math.random() < chance;
-    return { text: item.text, up };
+    const roll = Math.random(); // 0.0 ~ 1.0 사이 랜덤값
+    const up = roll >= 0.5;     // 0.5 이상이면 상승, 미만이면 하락
+
+    // roll 값이 해당 뉴스의 min~max 범위 안에 들어오는 뉴스만 필터링
+    const candidates = list.filter(item => roll >= item.min && roll <= item.max);
+
+    // 혹시 해당하는 뉴스가 없으면 방향에 맞는 뉴스 중 랜덤 선택 (폴백)
+    let chosen;
+    if (candidates.length > 0) {
+        chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    } else {
+        const fallback = list.filter(item => up ? item.min >= 0.5 : item.max <= 0.5);
+        chosen = fallback.length > 0
+            ? fallback[Math.floor(Math.random() * fallback.length)]
+            : list[Math.floor(Math.random() * list.length)];
+    }
+
+    return { text: chosen.text, up };
 }
 
 function updateStock(type, change, minPrice) {
@@ -67,13 +85,14 @@ function updateStock(type, change, minPrice) {
     if (stock.history.length > 15) stock.history.shift();
 }
 
+// ✅ 업데이트 주기 60초 → 30초
 setInterval(() => {
     updateStock("S", 100, 100);
     updateStock("A", 75, 100);
     updateStock("J", 25, 10);
     updateStock("G", 50, 50);
     io.emit("stockUpdate", stockData);
-}, 60000);
+}, 30000);
 
 io.on("connection", (socket) => {
     console.log("유저 접속:", socket.id);
