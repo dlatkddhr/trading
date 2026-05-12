@@ -1,159 +1,739 @@
-const express = require("express");
-const app = express();
-const http = require("http");
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+<!--
+    다음에 할것
+- 그래프 안정화
+- 채팅창(명령어)
+- 매수,매도 할때 돈 추가되는거 보이게
+-->
+<!DOCTYPE html>
+<html lang="en">
 
-app.use(express.static("public"));
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코딩부 주식게임</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
 
-// 각 뉴스의 chance = 상승 확률 (1~100 정수 기준)
-// roll(1~100)이 chance 이하면 상승, 초과면 하락
-const NEWS = {
-    S: [
-        { text: "상록전자에서 초전도체 개발에 성공하였습니다",       chance: 90 },
-        { text: "상록전자에서 반도체를 개발하였습니다",             chance: 70 },
-        { text: "상록전자에서 노조와 협상을 하였습니다",            chance: 50 },
-        { text: "상록전자에서 만든 반도체에서 버그가 발생하였습니다", chance: 40 },
-        { text: "상록전자에서 노조와 협상을 파괴하였습니다",         chance: 30 }
-    ],
-    A: [
-        { text: "안산제약에서 탈모 치료제를 개발 성공했습니다",                                   chance: 90 },
-        { text: "안산제약에서 스프레이형 약을 개발 성공하였습니다",                               chance: 70 },
-        { text: "안산제약에서 한타바이러스 백신개발에 성공하였습니다",                             chance: 50 },
-        { text: "안산제약에서 1끼식사를 하나로 챙길 수 있는 종합영양제에서 부작용이 검출되었습니다", chance: 40 },
-        { text: "안산제약에서 만든 탈모치료제의 부작용이 발견되었습니다",                          chance: 30 }
-    ],
-    J: [
-        { text: "러시아의 대통령이 전쟁을 끝내겠다고 이번 정상회담에서 입장을 내세웠습니다", chance: 90 },
-        { text: "미국에서 관세를 감소시켜서 시장이 안정세를 취했습니다",                  chance: 70 },
-        { text: "주원금융에서 이자의 강도를 낮추었습니다",                               chance: 50 },
-        { text: "북한에서 새로운 핵폭탄을 개발하였습니다",                               chance: 40 },
-        { text: "주원금융의 보안이 취약해 해킹당했습니다",                               chance: 30 }
-    ],
-    G: [
-        { text: "gta게임즈의 게임이 E스포츠 올림픽 종목으로 선정되었습니다",             chance: 90 },
-        { text: "gta게임즈에서 초보자도 쉽게 사용할 수 있는 게임 엔진을 만들었습니다",   chance: 70 },
-        { text: "gta게임즈에서 신작게임을 개발하였습니다",                              chance: 50 },
-        { text: "gta게임즈의 신작게임이 개발되기 전에 유출되었습니다",                   chance: 40 },
-        { text: "gta게임즈에서 만든 fps게임의 핵유저가 30% 이상이라는 논란이 있습니다",  chance: 30 }
-    ]
-};
+<style>
+    * {
+    font-family: 'Pretendard', sans-serif;
+    }
+    body {
+        user-select: none;
+        height: 100vh;
+        background-color: #121212;
+        margin: 0px;
+        overflow: hidden;
+    }
 
-let stockData = {
-    S: { price: 1500, history: [1500], news: NEWS.S[Math.floor(Math.random() * NEWS.S.length)].text },
-    A: { price: 1000, history: [1000], news: NEWS.A[Math.floor(Math.random() * NEWS.A.length)].text },
-    J: { price: 100,  history: [100],  news: NEWS.J[Math.floor(Math.random() * NEWS.J.length)].text },
-    G: { price: 500,  history: [500],  news: NEWS.G[Math.floor(Math.random() * NEWS.G.length)].text }
-};
+    .ansan {
+        position: absolute;
+        top: 200px;
+        left: 1050px;
+        height: 250px;
+        width: 700px;
+        background: #1a1a1a;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
+    }
 
-const users = {};
+    .jw {
+        position: absolute;
+        top: 600px;
+        left: 150px;
+        height: 250px;
+        width: 700px;
+        background: #1A1A1A;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
+    }
 
-// 뉴스 5개 중 랜덤으로 하나 선택
-// 1~100 정수(roll)를 뽑아서 그 뉴스의 chance 이하면 상승, 초과면 하락
-// 예) 극호재(chance=90): roll이 1~90이면 상승(90%), 91~100이면 하락(10%)
-//     극악재(chance=30): roll이 1~30이면 상승(30%), 31~100이면 하락(70%)
-function pickNews(type) {
-    const list = NEWS[type];
-    const item = list[Math.floor(Math.random() * list.length)];
-    const roll = Math.floor(Math.random() * 100) + 1; // 1~100 정수
-    const up   = roll <= item.chance;
+    .gta {
+        position: absolute;
+        top: 600px;
+        left: 1050px;
+        height: 250px;
+        width: 700px;
+        background: #1A1A1A;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
+    }
 
-    return { text: item.text, up };
-}
+    .sangrok {
+        position: absolute;
+        top: 200px;
+        left: 150px;
+        height: 250px;
+        width: 700px;
+        background: #1A1A1A;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
+    }
 
-function updateStock(type, change, minPrice) {
-    const stock = stockData[type];
-    const result = pickNews(type);
+    .btn {
+        position: absolute;
+        height: 27px;
+        width: 63px;
+        border-radius: 20px;
+    }
 
-    stock.news = result.text;
-    stock.price += result.up ? change : -change;
-    if (stock.price < minPrice) stock.price = minPrice;
+    .i {
+        position: relative;
+        height: 80px;
+        width: 80px;
+        transition: opacity 0.25s ease;
+    }
 
-    stock.history.push(stock.price);
-    if (stock.history.length > 15) stock.history.shift();
-}
+    .t {
+        color: white;
+        font-size: 24px;
+        font-weight: 700;
+        position: relative;
+        transition: opacity 0.25s ease;
+        letter-spacing: -0.5px;
 
-// ✅ 업데이트 주기 60초 → 30초
-setInterval(() => {
-    updateStock("S", 100, 100);
-    updateStock("A", 75, 100);
-    updateStock("J", 25, 10);
-    updateStock("G", 50, 50);
-    io.emit("stockUpdate", stockData);
-}, 40000);
+    }
 
-io.on("connection", (socket) => {
-    console.log("유저 접속:", socket.id);
+    .news {
+        font-size: 24px;
+        font-weight: 700;
+        width: 560px;
+        white-space: normal;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
 
-    users[socket.id] = {
-        balance: 2500,
-        holdings: { S: 0, A: 0, J: 0, G: 0 }
-    };
+    .appbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #1A1A1A;
+        color: white;
+        height: 60px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        font-size: 20px;
+        font-weight: bold;
+        z-index: 20;
+    }
 
-    socket.emit("init", {
-        stocks: stockData,
-        user: users[socket.id]
-    });
+    .bar {
+        background: #1A1A1A;
+        right: 20px;
+        bottom: -35px;
+        position: absolute;
+        width: 163px;
+        height: 50px;
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.05), 0 0 20px rgba(255,255,255,0.08);
+    }
 
-    socket.on("buy", (data) => {
-        const user = users[socket.id];
-        if (!user) return;
+    .Squantity, .Aquantity, .Jquantity, .Gquantity {
+        display: flex;
+        justify-content: center;
+        text-shadow: 0 0 2px #fff, 0 0 5px #fff;
+        color: #fff;
+        position: absolute;
+        width: 60px;
+        height: 40px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -55%);
+        font-family: 'Quicksand', sans-serif;
+        font-size: 1.8rem;
+        line-height: 40px;
+    }
 
-        let { type, amount } = data || {};
-        if (!stockData[type]) return;
+    .Splus, .Sminus, .Aplus, .Aminus, .Jplus, .Jminus, .Gplus, .Gminus {
+        text-shadow: 0 0 2px #fff, 0 0 5px #fff;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        cursor: pointer;
+    }
 
-        amount = Math.floor(Number(amount));
-        if (!Number.isInteger(amount) || amount <= 0 || amount > 500) return;
+    .Balance {
+        position: absolute;
+        width: 100px;
+        height: 30px;
+        border-radius: 20px;
+        background: #1C1C1C;
+        top: 116px;
+        left: 145px;
+        color: #FF4D4D;
+        box-shadow: 0 0 10px rgba(255,255,255,0.1), 0 0 20px rgba(255,255,255,0.25);
+        z-index: 5;
+    }
 
-        const cost = stockData[type].price * amount;
-        if (user.balance < cost) {
-            socket.emit("tradeResult", { ok: false, msg: "잔액이 부족합니다." });
-            return;
+    .holdings {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 100px;
+        height: 30px;
+        border-radius: 20px;
+    }
+
+    .Touch {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: touchFade 0.5s ease-out forwards;
+        z-index: 9999;
+    }
+
+    @keyframes touchFade {
+        0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.5); }
+        100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.5); }
+    }
+
+    canvas { pointer-events: none; visibility: hidden; }
+
+    #tradeNotice {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 10px 22px;
+        font-size: 15px;
+        font-weight: bold;
+        color: #fff;
+        box-shadow: 0 0 12px rgba(0,0,0,0.5);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        opacity: 0;
+        z-index: 9999;
+        pointer-events: none;
+    }
+    #tradeNotice.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+
+    #pepeWrap {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+    }
+    #pepe {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        z-index: 1;
+    }
+    .pepe-eye {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        width: 22px;
+        height: 22px;
+        top: 28px;
+        z-index: 0;
+    }
+    .pepe-eye.left  { left: 32px; }
+    .pepe-eye.right { left: 61px; }
+</style>
+
+<body>
+    <div class="appbar">
+        <div style="margin-left: 20px;">코딩부와 함께하는 주식으로 나락가기</div>
+    </div>
+
+    <div style="border-radius: 20px; position: relative; left: 870px; top: 105px; background-color: #0d0d0d; height: 35px; width: 156px;">
+        <div id="graphBtn" class="btn" style="position:absolute; background:#fff; top: 4px; right: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
+            <div id="graphText" style="font-size: 18px; font-weight: bold; margin-left: 7px; color: #000;">그래프</div>
+        </div>
+        <div id="infoBtn" class="btn" style="position:absolute; background:transparent; top: 4px; left: 10px; box-shadow: 0 0 4px #fff,0 0 7px #fff; cursor:pointer;">
+            <div id="infoText" style="font-size: 20px; font-weight: bold; margin-left:12.5px; color: #fff;">정보</div>
+        </div>
+    </div>
+
+    <!-- 상록전자 -->
+    <div class="sangrok">
+        <img src="상록전자.png" class="i" style="top: 10px; left: 10px;">
+        <div id="S" class="t" style="left: 98px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">상록전자 (1500)</div>
+        <div class="t" style="left: 98px; top: -75px; font-size: 16px; text-shadow:0 0 5px #fff">
+            소개: 상록전자는 한국의 자산 1위 기업이며 반도체, 전자제품, 가전제품, 휴대폰 및<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전 세계적으로 많은 전자제품사업을 하고있습니다.
+        </div>
+        <div class="t" style="left: 13px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
+        <div id="Snews" class="t news" style="left: 60px; top: -100px; text-shadow:0 0 5px #fff"></div>
+        <canvas id="Schart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
+        <div class="bar">
+            <div id="Ssell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
+            </div>
+            <div id="Sbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
+            </div>
+        </div>
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Sminus" data-value="100">-100</div>
+            <div class="Sminus" data-value="10">-10</div>
+            <div class="Sminus" data-value="1">-1</div>
+        </div>
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Squantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Splus" data-value="1">+1</div>
+            <div class="Splus" data-value="10">+10</div>
+            <div class="Splus" data-value="100">+100</div>
+        </div>
+        <div class="holdings"><div id="SHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
+    </div>
+
+    <!-- 안산제약 -->
+    <div class="ansan">
+        <img src="안산제약.png" class="i" style="left: 10px; top: 10px; height: 85px; width: 85px;">
+        <div id="A" class="t" style="left: 103px; top: -85px; text-shadow: 0 0 2px #fff,0 0 5px #fff">안산제약 (1000)</div>
+        <div class="t" style="left: 103px; top: -80px; font-size: 16px; text-shadow:0 0 5px #fff">
+            소개: 안산제약은 한국에서 판매율 1위를 유지하고 있으며 진통제, 해열제, 연고 등
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;일상에서 자주 사용되는 약품을 만들고있습니다
+        </div>
+        <div class="t" style="left: 13px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
+        <div id="Anews" class="t news" style="left: 60px; top: -100px; text-shadow:0 0 5px #fff"></div>
+        <canvas id="Achart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
+        <div class="bar">
+            <div id="Asell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
+            </div>
+            <div id="Abuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
+            </div>
+        </div>
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Aminus" data-value="100">-100</div>
+            <div class="Aminus" data-value="10">-10</div>
+            <div class="Aminus" data-value="1">-1</div>
+        </div>
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Aquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Aplus" data-value="1">+1</div>
+            <div class="Aplus" data-value="10">+10</div>
+            <div class="Aplus" data-value="100">+100</div>
+        </div>
+        <div class="holdings"><div id="AHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
+    </div>
+
+    <!-- 주원금융 -->
+    <div class="jw">
+        <img src="주원금융.png" class="i" style="left: 10px; top: 10px;">
+        <div class="t" id="J" style="left: 95px; top: -80px; text-shadow: 0 0 2px #fff,0 0 5px #fff">주원금융 (100)</div>
+        <div class="t" style="left: 95px; top: -75px; font-size: 16px; text-shadow:0 0 5px #fff">
+            소개: 주원금융은 대표적인 한국의 금융회사이며 이곳에선 주로 고객의
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자산운용을 도와주며 보험 또한 운영하고있습니다
+        </div>
+        <div class="t" style="left: 10px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
+        <div id="Jnews" class="t news" style="left: 60px; top: -100px; text-shadow:0 0 5px #fff"></div>
+        <canvas id="Jchart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
+        <div class="bar">
+            <div id="Jsell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
+            </div>
+            <div id="Jbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
+            </div>
+        </div>
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Jminus" data-value="100">-100</div>
+            <div class="Jminus" data-value="10">-10</div>
+            <div class="Jminus" data-value="1">-1</div>
+        </div>
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Jquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Jplus" data-value="1">+1</div>
+            <div class="Jplus" data-value="10">+10</div>
+            <div class="Jplus" data-value="100">+100</div>
+        </div>
+        <div class="holdings"><div id="JHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
+    </div>
+
+    <!-- gta게임즈 -->
+    <div class="gta">
+        <img src="gta1.jpg" class="i" style="left: 10px; top: 10px; height: 75px; width: 100px;">
+        <div class="t" id="G" style="left: 115px; top: -75px; text-shadow: 0 0 2px #fff,0 0 5px #fff">gta게임즈 (500)</div>
+        <div class="t" style="left: 115px; top: -73px; font-size: 16px; text-shadow:0 0 5px #fff">
+            소개: GTA 게임즈는 기존 게임 산업의 틀을 깨고 혁신적인 콘텐츠를 통해 <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;전 세계 게이머의 관심을 사고있습니다
+        </div>
+        <div class="t" style="left: 10px; top: -69px; text-shadow:0 0 5px #fff">소식:</div>
+        <div id="Gnews" class="t news" style="left: 60px; top: -100px; text-shadow:0 0 5px #fff"></div>
+        <canvas id="Gchart" width="700" height="250" style="position: absolute; top: 0px; border-radius: 20px;"></canvas>
+        <div class="bar">
+            <div id="Gsell" class="btn" style="right: 10px; top: 50%; transform: translateY(-50%); background-color: #3B82F6;box-shadow:0 0 5px #3B82F6,0 0 15px #3B82F6">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매도</div>
+            </div>
+            <div id="Gbuy" class="btn" style="right: 90px; top: 50%; transform: translateY(-50%); background-color: #DC2626;box-shadow:0 0 5px #FF4D4D,0 0 15px #FF4D4D">
+                <div style="font-weight: bold; color: #fff; margin-left: 16.5px;">매수</div>
+            </div>
+        </div>
+        <div class="bar" style="width: 130px; left: 0px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Gminus" data-value="100">-100</div>
+            <div class="Gminus" data-value="10">-10</div>
+            <div class="Gminus" data-value="1">-1</div>
+        </div>
+        <div class="bar" style="width: 130px; left: 140px;"><div class="Gquantity">0</div></div>
+        <div class="bar" style="width: 130px; left: 280px; display: flex; flex-direction: row;justify-content: center; align-items: center; gap: 13px;">
+            <div class="Gplus" data-value="1">+1</div>
+            <div class="Gplus" data-value="10">+10</div>
+            <div class="Gplus" data-value="100">+100</div>
+        </div>
+        <div class="holdings"><div id="GHT" style="margin-left: 50px; font-weight: bolder; color: #fff;">&times;0</div></div>
+    </div>
+
+    <div class="Balance">
+        <div class="balance" style="margin-top: 2px; margin-left: 8px; font-weight: bold;text-shadow: 0 0 2px #FF4D4D, 0 0 5px #FF4D4D">
+            잔액:2500
+        </div>
+    </div>
+
+    <div id="pepeWrap" style="left: 0px; top: 0px; opacity: 0;">
+        <div class="pepe-eye left"></div>
+        <div class="pepe-eye right"></div>
+        <img src="pepe.gif" id="pepe" draggable="false">
+    </div>
+
+    <div id="tradeNotice"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        let U = 0;
+        let Balance = 2500;
+        let pepeclick = false;
+
+        let stocks = {
+            S: { price: 1500, history: [1500], news: "" },
+            A: { price: 1000, history: [1000], news: "" },
+            J: { price: 100,  history: [100],  news: "" },
+            G: { price: 500,  history: [500],  news: "" }
+        };
+
+        let select   = { S: 0, A: 0, J: 0, G: 0 };
+        let holdings = { S: 0, A: 0, J: 0, G: 0 };
+
+        const stockName = { S: "상록전자", A: "안산제약", J: "주원금융", G: "gta게임즈" };
+
+        const Scanvas = document.getElementById("Schart");
+        const Acanvas = document.getElementById("Achart");
+        const Jcanvas = document.getElementById("Jchart");
+        const Gcanvas = document.getElementById("Gchart");
+        const Sctx = Scanvas.getContext("2d");
+        const Actx = Acanvas.getContext("2d");
+        const Jctx = Jcanvas.getContext("2d");
+        const Gctx = Gcanvas.getContext("2d");
+
+        function drawChart(ctx, canvas, history, visibleCount) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const shown = history.slice(0, visibleCount ?? history.length);
+            if (!shown || shown.length < 2) return;
+
+            let min = Math.min(...history);
+            let max = Math.max(...history);
+            if (min === max) { min -= 1; max += 1; }
+
+            const pad   = Math.max(10, (max - min) * 0.15);
+            const low   = min - pad;
+            const high  = max + pad;
+            const range = high - low;
+            const stepX = canvas.width / 14;
+
+            const toY = v => canvas.height - ((v - low) / range) * canvas.height;
+
+            ctx.beginPath();
+            ctx.moveTo(0, toY(shown[0]));
+            for (let i = 1; i < shown.length; i++) ctx.lineTo(stepX * i, toY(shown[i]));
+            ctx.lineTo(stepX * (shown.length - 1), canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.closePath();
+
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, "rgba(255,0,0,0.35)");
+            grad.addColorStop(1, "rgba(255,0,0,0)");
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(0, toY(shown[0]));
+            for (let i = 1; i < shown.length; i++) ctx.lineTo(stepX * i, toY(shown[i]));
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
 
-        user.balance -= cost;
-        user.holdings[type] += amount;
+        const animState = { S: 1, A: 1, J: 1, G: 1 };
+        const animTimer = { S: null, A: null, J: null, G: null };
 
-        socket.emit("userUpdate", user);
-        socket.emit("tradeResult", { ok: true, side: "buy", type, amount });
-    });
-
-    socket.on("sell", (data) => {
-        const user = users[socket.id];
-        if (!user) return;
-
-        let { type, amount } = data || {};
-        if (!stockData[type]) return;
-
-        amount = Math.floor(Number(amount));
-        if (!Number.isInteger(amount) || amount <= 0 || amount > 500) return;
-
-        if (user.holdings[type] < amount) {
-            socket.emit("tradeResult", { ok: false, msg: "보유 주식이 부족합니다." });
-            return;
+        function stopAnimation(type) {
+            if (animTimer[type]) {
+                clearTimeout(animTimer[type]);
+                animTimer[type] = null;
+            }
         }
 
-        user.balance += stockData[type].price * amount;
-        user.holdings[type] -= amount;
+        function stopAllAnimations() {
+            ["S", "A", "J", "G"].forEach(stopAnimation);
+        }
 
-        socket.emit("userUpdate", user);
-        socket.emit("tradeResult", { ok: true, side: "sell", type, amount });
-    });
+        function animateChart(type) {
+            const map = { S: [Sctx, Scanvas], A: [Actx, Acanvas], J: [Jctx, Jcanvas], G: [Gctx, Gcanvas] };
+            const [ctx, canvas] = map[type];
+            const history = stocks[type].history;
 
-    socket.on("pepeReward", () => {
-        const user = users[socket.id];
-        if (!user) return;
+            stopAnimation(type);
+            animState[type] = Math.max(1, animState[type]);
 
-        user.balance += 500;
-        socket.emit("userUpdate", user);
-    });
+            function step() {
+                drawChart(ctx, canvas, history, animState[type]);
 
-    socket.on("disconnect", () => {
-        console.log("유저 퇴장:", socket.id);
-        delete users[socket.id];
-    });
-});
+                if (animState[type] < history.length) {
+                    animState[type]++;
+                    animTimer[type] = setTimeout(step, 4000);
+                }
+            }
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`서버 실행중 → http://localhost:${PORT}`));
+            step();
+        }
+
+        function drawAll() {
+            const map = { S: [Sctx, Scanvas], A: [Actx, Acanvas], J: [Jctx, Jcanvas], G: [Gctx, Gcanvas] };
+            ["S", "A", "J", "G"].forEach(type => {
+                const [ctx, canvas] = map[type];
+                drawChart(ctx, canvas, stocks[type].history);
+                animState[type] = stocks[type].history.length;
+            });
+        }
+
+        function drawAllAnimated() {
+            ["S", "A", "J", "G"].forEach(type => {
+                animState[type] = 1;
+                animateChart(type);
+            });
+        }
+
+        function updateUI() {
+            document.querySelector(".balance").textContent = "잔액:" + Balance;
+
+            document.getElementById("S").textContent = `${stockName.S} (${stocks.S.price})`;
+            document.getElementById("A").textContent = `${stockName.A} (${stocks.A.price})`;
+            document.getElementById("J").textContent = `${stockName.J} (${stocks.J.price})`;
+            document.getElementById("G").textContent = `${stockName.G} (${stocks.G.price})`;
+
+            document.getElementById("Snews").textContent = stocks.S.news || "";
+            document.getElementById("Anews").textContent = stocks.A.news || "";
+            document.getElementById("Jnews").textContent = stocks.J.news || "";
+            document.getElementById("Gnews").textContent = stocks.G.news || "";
+
+            document.querySelector(".Squantity").textContent = select.S;
+            document.querySelector(".Aquantity").textContent = select.A;
+            document.querySelector(".Jquantity").textContent = select.J;
+            document.querySelector(".Gquantity").textContent = select.G;
+
+            document.getElementById("SHT").textContent = "×" + holdings.S;
+            document.getElementById("AHT").textContent = "×" + holdings.A;
+            document.getElementById("JHT").textContent = "×" + holdings.J;
+            document.getElementById("GHT").textContent = "×" + holdings.G;
+        }
+
+        let noticeTimer = null;
+        function showNotice(msg, color) {
+            const el = document.getElementById("tradeNotice");
+            el.textContent = msg;
+            el.style.borderLeft = `4px solid ${color}`;
+            el.classList.add("show");
+            clearTimeout(noticeTimer);
+            noticeTimer = setTimeout(() => el.classList.remove("show"), 2000);
+        }
+
+        socket.on("init", (data) => {
+            stocks   = data.stocks;
+            Balance  = data.user.balance;
+            holdings = data.user.holdings;
+            updateUI();
+            drawAllAnimated();
+        });
+
+        socket.on("stockUpdate", (serverStocks) => {
+            stocks = serverStocks;
+            stopAllAnimations();
+            updateUI();
+            drawAll();
+        });
+
+        socket.on("userUpdate", (user) => {
+            Balance  = user.balance;
+            holdings = user.holdings;
+            updateUI();
+        });
+
+        socket.on("tradeResult", (result) => {
+            if (result.ok) {
+                if (result.side === "buy") {
+                    const cost = stocks[result.type].price * result.amount;
+                    showNotice(`✅ ${stockName[result.type]} ${result.amount}주 매수 (-${cost})`, "#DC2626");
+                    select[result.type] = 0;
+                } else {
+                    const gain = stocks[result.type].price * result.amount;
+                    showNotice(`✅ ${stockName[result.type]} ${result.amount}주 매도 (+${gain})`, "#3B82F6");
+                    select[result.type] = Math.max(0, select[result.type] - result.amount);
+                }
+            } else {
+                showNotice("❌ " + result.msg, "#888");
+            }
+            updateUI();
+        });
+
+        function buyStock(type) {
+            const amount = select[type];
+            if (amount > 0) socket.emit("buy", { type, amount });
+        }
+
+        function sellStock(type) {
+            const amount = Math.min(select[type], holdings[type]);
+            if (amount > 0) socket.emit("sell", { type, amount });
+        }
+
+        function setupControls(type) {
+            document.getElementById(type + "buy").onclick  = () => buyStock(type);
+            document.getElementById(type + "sell").onclick = () => sellStock(type);
+
+            document.querySelectorAll(`.${type}plus`).forEach(btn => {
+                btn.onclick = () => {
+                    select[type] += Number(btn.dataset.value);
+                    if (select[type] > 500) select[type] = 500;
+                    updateUI();
+                };
+            });
+
+            document.querySelectorAll(`.${type}minus`).forEach(btn => {
+                btn.onclick = () => {
+                    select[type] -= Number(btn.dataset.value);
+                    if (select[type] < 0) select[type] = 0;
+                    updateUI();
+                };
+            });
+        }
+
+        ["S", "A", "J", "G"].forEach(setupControls);
+
+        document.getElementById("graphBtn").addEventListener("click", function () {
+            U = 1;
+            document.getElementById("graphBtn").style.background = "transparent";
+            document.getElementById("graphText").style.color = "#fff";
+            document.getElementById("infoBtn").style.background = "#fff";
+            document.getElementById("infoText").style.color = "#000";
+            document.querySelectorAll(".i").forEach(el => el.style.opacity = "0");
+            document.querySelectorAll(".t").forEach(el => el.style.opacity = "0");
+            [Scanvas, Acanvas, Jcanvas, Gcanvas].forEach(c => c.style.visibility = "visible");
+        });
+
+        document.getElementById("infoBtn").addEventListener("click", function () {
+            U = 0;
+            document.getElementById("infoBtn").style.background = "transparent";
+            document.getElementById("infoText").style.color = "#fff";
+            document.getElementById("graphBtn").style.background = "#fff";
+            document.getElementById("graphText").style.color = "#000";
+            [Scanvas, Acanvas, Jcanvas, Gcanvas].forEach(c => c.style.visibility = "hidden");
+            document.querySelectorAll(".i").forEach(el => el.style.opacity = "1");
+            document.querySelectorAll(".t").forEach(el => el.style.opacity = "1");
+        });
+
+        document.addEventListener("mousedown", function (e) {
+            const touch = document.createElement("div");
+            touch.className = "Touch";
+            touch.style.left = e.pageX + "px";
+            touch.style.top  = e.pageY + "px";
+            touch.style.background = `rgba(${Math.random()*255|0}, ${Math.random()*255|0}, 255, 0.5)`;
+            document.body.appendChild(touch);
+            setTimeout(() => touch.remove(), 500);
+        });
+
+        // ─────────────────────────────────────────
+        // 페페 이스터에그
+        // ─────────────────────────────────────────
+        const pepeWrap = document.getElementById("pepeWrap");
+        const pepeImg  = document.getElementById("pepe");
+
+        let x = 0, y = 0, mx = 1, my = 1;
+
+        // 페페 클릭 핸들러
+        pepeWrap.addEventListener("click", function (e) {
+            if (!pepeclick) return;
+
+            e.stopPropagation();
+
+            pepeclick = false;
+            pepeWrap.style.opacity = 0;
+            pepeWrap.style.pointerEvents = "none";
+
+            socket.emit("pepeReward");
+            showNotice("🐸 페페 발견! +500", "#22c55e");
+        });
+
+        function spawnPepe() {
+            if (pepeclick) return;
+
+            // GIF 새로고침
+            pepeImg.src = "pepe.gif?t=" + Date.now();
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const pw = 100;
+            const ph = 100;
+
+            x = Math.random() * (w - pw);
+            y = Math.random() * (h - ph);
+
+            pepeWrap.style.left = x + "px";
+            pepeWrap.style.top  = y + "px";
+
+            pepeWrap.style.opacity = 1;
+            pepeWrap.style.pointerEvents = "auto";
+
+            pepeclick = true;
+
+            setTimeout(() => {
+                pepeclick = false;
+                pepeWrap.style.opacity = 0;
+                pepeWrap.style.pointerEvents = "none";
+            }, 12500);
+        }
+
+        setInterval(spawnPepe, 12500);
+
+        function pepemove() {
+            if (pepeclick) {
+                x += mx;
+                y += my;
+
+                const w  = window.innerWidth;
+                const h  = window.innerHeight;
+                const pw = pepeWrap.offsetWidth;
+                const ph = pepeWrap.offsetHeight;
+
+                if (x <= 0)      { x = 0;      mx *= -1; }
+                if (x + pw >= w) { x = w - pw; mx *= -1; }
+                if (y <= 0)      { y = 0;       my *= -1; }
+                if (y + ph >= h) { y = h - ph;  my *= -1; }
+
+                pepeWrap.style.left = x + "px";
+                pepeWrap.style.top  = y + "px";
+            }
+
+            requestAnimationFrame(pepemove);
+        }
+
+        pepemove();
+        spawnPepe();
+    </script>
+</body>
+</html>
