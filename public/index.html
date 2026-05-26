@@ -680,35 +680,32 @@
         });
 
         function spawnPepe() {
-            if (pepeclick) return;
-
-            // GIF 새로고침
             pepeImg.src = "pepe.gif?t=" + Date.now();
 
             const w = window.innerWidth;
             const h = window.innerHeight;
-            const pw = 100;
-            const ph = 100;
 
-            x = Math.random() * (w - pw);
-            y = Math.random() * (h - ph);
+            x = Math.random() * (w - 100);
+            y = Math.random() * (h - 100);
 
             pepeWrap.style.left = x + "px";
             pepeWrap.style.top  = y + "px";
-
             pepeWrap.style.opacity = 1;
             pepeWrap.style.pointerEvents = "auto";
 
             pepeclick = true;
 
+            // 12.5초 후 사라지고, 사라진 뒤 12.5초 후 다시 등장
             setTimeout(() => {
                 pepeclick = false;
                 pepeWrap.style.opacity = 0;
                 pepeWrap.style.pointerEvents = "none";
+                setTimeout(spawnPepe, 12500);
             }, 12500);
         }
 
-        setInterval(spawnPepe, 12500);
+        // 첫 등장은 5초 후
+        setTimeout(spawnPepe, 5000);
 
         function pepemove() {
             if (pepeclick) {
@@ -733,7 +730,6 @@
         }
 
         pepemove();
-        spawnPepe();
     </script>
 </body>
 </html>
