@@ -50,24 +50,33 @@ let stockData = {
 const users = {};
 
 // 뉴스 5개 중 랜덤으로 하나 선택
-// 1~100 정수(roll)를 뽑아서 그 뉴스의 chance 이하면 상승, 초과면 하락
-// 예) 극호재(chance=90): roll이 1~90이면 상승(90%), 91~100이면 하락(10%)
-//     극악재(chance=30): roll이 1~30이면 상승(30%), 31~100이면 하락(70%)
+// chance 값에 따라 방향과 변동폭 결정:
+//   90 → 극호재: 무조건 상승, 변동폭 ×1.5
+//   70 → 호재:   무조건 상승, 변동폭 ×1.0
+//   50 → 중립:   50:50 랜덤,  변동폭 ×0.5
+//   40 → 악재:   무조건 하락, 변동폭 ×1.0
+//   30 → 극악재: 무조건 하락, 변동폭 ×1.5
 function pickNews(type) {
     const list = NEWS[type];
     const item = list[Math.floor(Math.random() * list.length)];
-    const roll = Math.floor(Math.random() * 100) + 1; // 1~100 정수
-    const up   = roll <= item.chance;
 
-    return { text: item.text, up };
+    let up, multiplier;
+    if (item.chance === 90)      { up = true;                    multiplier = 1.5; }
+    else if (item.chance === 70) { up = true;                    multiplier = 1.0; }
+    else if (item.chance === 50) { up = Math.random() < 0.5;    multiplier = 0.5; }
+    else if (item.chance === 40) { up = false;                   multiplier = 1.0; }
+    else                         { up = false;                   multiplier = 1.5; } // 30
+
+    return { text: item.text, up, multiplier };
 }
 
 function updateStock(type, change, minPrice) {
     const stock = stockData[type];
     const result = pickNews(type);
 
-    stock.news = result.text;
-    stock.price += result.up ? change : -change;
+    const delta = Math.round(change * result.multiplier);
+    stock.news   = result.text;
+    stock.price += result.up ? delta : -delta;
     if (stock.price < minPrice) stock.price = minPrice;
 
     stock.history.push(stock.price);
